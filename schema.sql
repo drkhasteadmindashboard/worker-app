@@ -49,5 +49,10 @@ CREATE TABLE IF NOT EXISTS notes (
   FOREIGN KEY (created_by) REFERENCES admins(id)
 );
 
+CREATE TABLE IF NOT EXISTS settings (
+  key TEXT PRIMARY KEY,
+  value TEXT NOT NULL
+);
+
 CREATE INDEX IF NOT EXISTS idx_tasks_due ON tasks(due_date);
 CREATE INDEX IF NOT EXISTS idx_notes_created_by ON notes(created_by);

@@ -1,9 +1,11 @@
 // ادغام تلگرام: ارسال پیام و پردازش وبهوک ربات
+import { getSetting } from './config.js';
 
 export async function tgSend(env, chatId, text) {
-  if (!chatId || !env.TELEGRAM_BOT_TOKEN) return;
+  const botToken = await getSetting(env, 'TELEGRAM_BOT_TOKEN');
+  if (!chatId || !botToken) return;
   try {
-    await fetch(`https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
+    await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML' }),

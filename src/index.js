@@ -12,6 +12,7 @@ import {
 } from './auth.js';
 import { tgSend, notifyAllAdmins, handleTelegramWebhook } from './telegram.js';
 import { backupDatabaseToGithub, uploadFileToGithub } from './github.js';
+import { getSetting, setSetting } from './config.js';
 
 function json(data, status = 200, extraHeaders = {}) {
   return new Response(JSON.stringify(data), {
@@ -49,7 +50,8 @@ export default {
 
     try {
       // --- وبهوک تلگرام (بدون نیاز به احراز هویت داشبورد، محافظت‌شده با راز در مسیر) ---
-      if (pathname === `/telegram/webhook/${env.TELEGRAM_WEBHOOK_SECRET}` && request.method === 'POST') {
+      const webhookSecret = await getSetting(env, 'TELEGRAM_WEBHOOK_SECRET');
+      if (webhookSecret && pathname === `/telegram/webhook/${webhookSecret}` && request.method === 'POST') {
         return await handleTelegramWebhook(request, env);
       }
 
@@ -66,7 +68,8 @@ export default {
   },
 
   async scheduled(event, env, ctx) {
-    if (event.cron === '0 2 * * *') {
+    const backupCron = '0 2 * * *';
+    if (event.cron === backupCron) {
       ctx.waitUntil(backupDatabaseToGithub(env).catch((e) => console.error('backup failed', e)));
       return;
     }
@@ -160,6 +163,38 @@ async function handleApi(request, env, url) {
     return json({ admin: publicAdmin(me) });
   }
   if (!me) return err('وارد نشده‌اید.', 401);
+
+  // --- مدیریت داینامیک تنظیمات از داخل خود اپ (فقط برای ادمین اصلی) ---
+  const settingsKeys = [
+    'TELEGRAM_BOT_TOKEN',
+    'TELEGRAM_WEBHOOK_SECRET',
+    'TELEGRAM_BOT_USERNAME',
+    'GITHUB_TOKEN',
+    'GITHUB_REPO',
+    'GITHUB_BRANCH',
+    'GITHUB_BACKUP_DIR',
+    'GITHUB_FILES_DIR'
+  ];
+
+  if (path === '/settings' && method === 'GET') {
+    if (!me.is_super) return err('فقط ادمین اصلی به تنظیمات پیشرفته سیستم دسترسی دارد.', 403);
+    const settings = {};
+    for (const key of settingsKeys) {
+      settings[key] = await getSetting(env, key);
+    }
+    return json({ settings });
+  }
+
+  if (path === '/settings' && method === 'POST') {
+    if (!me.is_super) return err('فقط ادمین اصلی به تنظیمات پیشرفته سیستم دسترسی دارد.', 403);
+    const body = await readJson(request);
+    for (const key of settingsKeys) {
+      if (body[key] !== undefined) {
+        await setSetting(env, key, body[key].trim());
+      }
+    }
+    return json({ ok: true });
+  }
 
   // --- ادمین‌ها ---
   if (path === '/admins' && method === 'GET') {
@@ -333,7 +368,8 @@ async function handleApi(request, env, url) {
   if (path === '/telegram/link-code' && method === 'POST') {
     const code = randomHex(6);
     await env.DB.prepare('UPDATE admins SET telegram_link_code = ? WHERE id = ?').bind(code, me.id).run();
-    return json({ code, botUsername: env.TELEGRAM_BOT_USERNAME || null });
+    const botUsername = await getSetting(env, 'TELEGRAM_BOT_USERNAME');
+    return json({ code, botUsername: botUsername || null });
   }
 
   if (path === '/telegram/unlink' && method === 'POST') {

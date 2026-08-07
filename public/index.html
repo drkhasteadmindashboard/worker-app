@@ -32,6 +32,7 @@ body{
   color:var(--text);
   font-family:'Vazirmatn',sans-serif;
   min-height:100vh;
+  overflow-x:hidden;
 }
 ::selection{background:var(--accent);color:#1a1206;}
 a{color:inherit;}
@@ -45,7 +46,7 @@ button{font-family:inherit;}
 .pulse-line path{fill:none;stroke:var(--accent2);stroke-width:2;filter:drop-shadow(0 0 4px rgba(79,209,197,.6));}
 
 /* ---------- صفحات ورود / راه‌اندازی ---------- */
-.auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
+.auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px;}
 .auth-card{
   width:100%;max-width:400px;background:var(--surface);
   border:1px solid var(--border);border-radius:var(--radius);
@@ -79,21 +80,69 @@ button{font-family:inherit;}
 .btn-block{width:100%;}
 .btn-sm{padding:6px 12px;font-size:12.5px;border-radius:8px;}
 .auth-error{color:var(--danger);font-size:13px;margin-top:10px;min-height:16px;}
-.auth-switch{text-align:center;margin-top:16px;font-size:13px;color:var(--text-dim);}
-.auth-switch span{color:var(--accent2);cursor:pointer;}
+
+/* ---------- آیکون‌های SVG کاستوم ---------- */
+.svg-icon {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2;
+  stroke: currentColor;
+  fill: none;
+  display: inline-block;
+  vertical-align: middle;
+}
+.svg-icon-large {
+  width: 48px;
+  height: 48px;
+  stroke-width: 1.5;
+  stroke: var(--text-dim);
+  fill: none;
+  margin-bottom: 12px;
+}
+.svg-icon-inline {
+  width: 14px;
+  height: 14px;
+  stroke-width: 2;
+  stroke: currentColor;
+  fill: none;
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: 4px;
+}
+
+/* ---------- هدر موبایل ---------- */
+.mobile-header {
+  display: none;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 16px;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 90;
+}
+.menu-toggle {
+  background: none;
+  border: none;
+  color: var(--text);
+  cursor: pointer;
+  padding: 4px;
+}
 
 /* ---------- چیدمان اصلی ---------- */
 .app-shell{display:flex;min-height:100vh;}
 .sidebar{
-  width:250px;flex-shrink:0;background:var(--surface);border-left:1px solid var(--border);
+  width:260px;flex-shrink:0;background:var(--surface);border-left:1px solid var(--border);
   display:flex;flex-direction:column;padding:22px 16px;position:sticky;top:0;height:100vh;
+  transition: transform 0.3s ease, right 0.3s ease;
+  z-index: 95;
 }
 .sidebar .brand{padding:0 6px;margin-bottom:22px;}
 .nav-item{
   display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:10px;
   color:var(--text-dim);cursor:pointer;font-size:14px;margin-bottom:2px;transition:.15s;
 }
-.nav-item svg{width:18px;height:18px;flex-shrink:0;}
 .nav-item:hover{background:var(--surface-2);color:var(--text);}
 .nav-item.active{background:var(--surface-2);color:var(--accent);}
 .nav-spacer{flex:1;}
@@ -139,7 +188,7 @@ button{font-family:inherit;}
 .task-body{flex:1;min-width:0;}
 .task-title{font-size:14.5px;font-weight:600;}
 .task-title.done{text-decoration:line-through;color:var(--text-dim);}
-.task-meta{display:flex;gap:10px;margin-top:5px;font-size:11.5px;color:var(--text-dim);flex-wrap:wrap;}
+.task-meta{display:flex;gap:10px;margin-top:5px;font-size:11.5px;color:var(--text-dim);flex-wrap:wrap;align-items:center;}
 .badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:999px;font-size:11px;font-family:var(--mono);}
 .pr-urgent{background:rgba(239,106,106,.14);color:var(--danger);}
 .pr-high{background:rgba(242,161,84,.14);color:var(--accent);}
@@ -151,11 +200,10 @@ button{font-family:inherit;}
 .icon-btn:hover{background:var(--surface-2);color:var(--text);}
 .icon-btn.danger:hover{color:var(--danger);}
 .empty-state{text-align:center;padding:50px 20px;color:var(--text-dim);}
-.empty-state .big{font-size:34px;margin-bottom:8px;}
 
 /* ---------- تقویم ---------- */
 .cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
-.cal-head h3{margin:0;font-family:var(--mono);font-size:16px;}
+.cal-head h3{margin:0;font-size:16px;}
 .cal-nav{display:flex;gap:6px;}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;}
 .cal-dow{text-align:center;font-size:11.5px;color:var(--text-dim);padding-bottom:6px;}
@@ -191,8 +239,8 @@ button{font-family:inherit;}
 .super-tag{display:inline-block;margin-top:6px;font-size:10.5px;background:rgba(242,161,84,.14);color:var(--accent);padding:2px 9px;border-radius:999px;}
 
 /* ---------- تنظیمات ---------- */
-.settings-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px;max-width:520px;margin-bottom:16px;}
-.settings-card h3{margin:0 0 4px;font-size:15px;}
+.settings-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px;max-width:100%;margin-bottom:16px;}
+.settings-card h3{margin:0 0 4px;font-size:15px;display:flex;align-items:center;gap:8px;}
 .settings-card p{color:var(--text-dim);font-size:13px;margin:0 0 14px;line-height:1.8;}
 .code-box{font-family:var(--mono);background:var(--surface-2);border:1px dashed var(--border);border-radius:10px;padding:14px;text-align:center;font-size:20px;letter-spacing:3px;color:var(--accent2);margin-bottom:14px;}
 .status-line{display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:14px;}
@@ -219,25 +267,67 @@ button{font-family:inherit;}
 }
 .toast.err{border-color:rgba(239,106,106,.4);color:var(--danger);}
 
+/* ---------- رسپانسیو و موبایل ---------- */
 @media(max-width:820px){
-  .app-shell{flex-direction:column;}
-  .sidebar{width:100%;height:auto;position:relative;flex-direction:row;overflow-x:auto;padding:12px;align-items:center;}
-  .sidebar .brand,.nav-spacer{display:none;}
-  .nav-item{white-space:nowrap;}
-  .user-badge{display:none;}
-  .stat-grid{grid-template-columns:repeat(2,1fr);}
-  .main{padding:18px;}
+  .mobile-header {
+    display: flex;
+  }
+  .app-shell {
+    flex-direction: column;
+  }
+  .sidebar {
+    position: fixed;
+    top: 57px; /* ارتفاع هدر موبایل */
+    right: -260px; /* مخفی در حالت عادی */
+    height: calc(100vh - 57px);
+    width: 260px;
+    box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+  }
+  .sidebar.open {
+    right: 0;
+  }
+  .main {
+    padding: 20px 16px;
+  }
+  .stat-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .cal-day {
+    aspect-ratio: auto;
+    height: 52px;
+    padding: 4px;
+    font-size: 11px;
+  }
+}
+@media(max-width:480px){
+  .stat-grid {
+    grid-template-columns: 1fr;
+  }
+  .row-2 {
+    grid-template-columns: 1fr;
+  }
 }
 </style>
 </head>
 <body>
+
+<!-- هدر موبایل -->
+<header class="mobile-header">
+  <div class="brand"><span class="brand-dot"></span><h1>دکتر خسته</h1></div>
+  <button class="menu-toggle" onclick="toggleSidebar()">
+    <svg class="svg-icon" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round" stroke-linejoin="round" /></svg>
+  </button>
+</header>
 
 <!-- ================= صفحه راه‌اندازی اولیه ================= -->
 <div id="setup-screen" class="auth-wrap hidden">
   <div class="auth-card">
     <div class="brand"><span class="brand-dot"></span><h1>دکتر خسته</h1></div>
     <p class="brand-sub">راه‌اندازی اولیه — ساخت ادمین اصلی</p>
-    <div class="pulse-line">${''}</div>
+    <div class="pulse-line">
+      <svg viewBox="0 0 300 34" preserveAspectRatio="none"><path d="M0,17 L40,17 L52,4 L64,30 L76,17 L300,17"/></svg>
+    </div>
     <div class="field"><label>نام نمایشی</label><input id="setup-name" placeholder="مثلاً علی"></div>
     <div class="field"><label>نام کاربری</label><input id="setup-username" placeholder="admin"></div>
     <div class="field"><label>رمز عبور</label><input id="setup-password" type="password" placeholder="یک رمز قوی انتخاب کنید"></div>
@@ -261,15 +351,33 @@ button{font-family:inherit;}
 
 <!-- ================= اپ اصلی ================= -->
 <div id="app" class="app-shell hidden">
-  <aside class="sidebar">
+  <aside class="sidebar" id="sidebar">
     <div class="brand"><span class="brand-dot"></span><h1>دکتر خسته</h1></div>
     <nav>
-      <div class="nav-item active" data-view="overview">🏠 <span>نمای کلی</span></div>
-      <div class="nav-item" data-view="tasks">✅ <span>تسک‌ها</span></div>
-      <div class="nav-item" data-view="calendar">📅 <span>تقویم</span></div>
-      <div class="nav-item" data-view="notes">🗒️ <span>یادداشت‌ها</span></div>
-      <div class="nav-item" data-view="admins" id="nav-admins">👥 <span>ادمین‌ها</span></div>
-      <div class="nav-item" data-view="settings">⚙️ <span>تنظیمات</span></div>
+      <div class="nav-item active" data-view="overview">
+        <svg class="svg-icon" viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>نمای کلی</span>
+      </div>
+      <div class="nav-item" data-view="tasks">
+        <svg class="svg-icon" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>تسک‌ها</span>
+      </div>
+      <div class="nav-item" data-view="calendar">
+        <svg class="svg-icon" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>تقویم</span>
+      </div>
+      <div class="nav-item" data-view="notes">
+        <svg class="svg-icon" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>یادداشت‌ها</span>
+      </div>
+      <div class="nav-item" data-view="admins" id="nav-admins">
+        <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>ادمین‌ها</span>
+      </div>
+      <div class="nav-item" data-view="settings">
+        <svg class="svg-icon" viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>تنظیمات</span>
+      </div>
     </nav>
     <div class="nav-spacer"></div>
     <div class="user-badge">
@@ -278,11 +386,13 @@ button{font-family:inherit;}
         <div class="name" id="me-name"></div>
         <div class="role" id="me-role"></div>
       </div>
-      <button class="logout-btn" onclick="doLogout()" title="خروج">⎋</button>
+      <button class="logout-btn" onclick="doLogout()" title="خروج">
+        <svg class="svg-icon" viewBox="0 0 24 24"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
     </div>
   </aside>
 
-  <main class="main">
+  <main class="main" onclick="closeSidebarOnNavigate()">
 
     <!-- نمای کلی -->
     <section class="view active" id="view-overview">
@@ -297,7 +407,10 @@ button{font-family:inherit;}
     <section class="view" id="view-tasks">
       <div class="view-header">
         <div><h2>تسک‌ها</h2><p>مدیریت کارهای پروژه</p></div>
-        <button class="btn btn-primary" onclick="openTaskModal()">+ تسک جدید</button>
+        <button class="btn btn-primary" onclick="openTaskModal()">
+          <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          تسک جدید
+        </button>
       </div>
       <div class="filter-bar" id="task-filters">
         <div class="chip active" data-filter="all">همه</div>
@@ -330,7 +443,10 @@ button{font-family:inherit;}
     <section class="view" id="view-notes">
       <div class="view-header">
         <div><h2>یادداشت‌ها</h2><p>یادداشت‌های تیم با رنگ و نویسنده اختصاصی</p></div>
-        <button class="btn btn-primary" onclick="openNoteModal()">+ یادداشت جدید</button>
+        <button class="btn btn-primary" onclick="openNoteModal()">
+          <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          یادداشت جدید
+        </button>
       </div>
       <div class="notes-grid" id="notes-grid"></div>
     </section>
@@ -339,7 +455,10 @@ button{font-family:inherit;}
     <section class="view" id="view-admins">
       <div class="view-header">
         <div><h2>ادمین‌ها</h2><p>فقط ادمین اصلی می‌تواند ادمین جدید بسازد</p></div>
-        <button class="btn btn-primary hidden" id="add-admin-btn" onclick="openAdminModal()">+ ادمین جدید</button>
+        <button class="btn btn-primary hidden" id="add-admin-btn" onclick="openAdminModal()">
+          <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          ادمین جدید
+        </button>
       </div>
       <div class="admin-grid" id="admin-grid"></div>
     </section>
@@ -349,7 +468,10 @@ button{font-family:inherit;}
       <div class="view-header"><div><h2>تنظیمات</h2><p>اتصال تلگرام، بکاپ و پروفایل شما</p></div></div>
 
       <div class="settings-card">
-        <h3>🔗 اتصال تلگرام</h3>
+        <h3>
+          <svg class="svg-icon" viewBox="0 0 24 24"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          اتصال تلگرام
+        </h3>
         <p id="tg-status-text">وضعیت اتصال...</p>
         <div class="status-line"><span class="status-dot" id="tg-dot"></span><span id="tg-dot-label"></span></div>
         <div id="tg-code-box" class="code-box hidden"></div>
@@ -358,13 +480,70 @@ button{font-family:inherit;}
       </div>
 
       <div class="settings-card">
-        <h3>💾 بکاپ گیت‌هاب</h3>
+        <h3>
+          <svg class="svg-icon" viewBox="0 0 24 24"><path d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          بکاپ گیت‌هاب
+        </h3>
         <p>بکاپ خودکار هر شب انجام می‌شود؛ می‌توانید همین حالا هم یک بکاپ دستی بگیرید.</p>
         <button class="btn btn-ghost" onclick="manualBackup()">گرفتن بکاپ الان</button>
       </div>
 
+      <!-- پنل تنظیمات پیشرفته سیستم مخصوص ادمین اصلی -->
+      <div class="settings-card hidden" id="advanced-settings-card">
+        <h3>
+          <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          تنظیمات پیشرفته سیستم (مخصوص ادمین اصلی)
+        </h3>
+        <p>تمام متغیرها و کلیدهای مورد نیاز گیت‌هاب و تلگرام را می‌توانید مستقیماً از این‌جا و بدون نیاز به پنل کلودفلر مدیریت کنید.</p>
+
+        <div class="row-2">
+          <div class="field">
+            <label>توکن ربات تلگرام (TELEGRAM_BOT_TOKEN)</label>
+            <input id="sys-tg-token" type="password" placeholder="مثلا 123456:ABCdef...">
+          </div>
+          <div class="field">
+            <label>رمز وبهوک تلگرام (TELEGRAM_WEBHOOK_SECRET)</label>
+            <input id="sys-tg-webhook" placeholder="یک رمز تصادفی">
+          </div>
+        </div>
+        <div class="row-2">
+          <div class="field">
+            <label>آیدی ربات تلگرام (TELEGRAM_BOT_USERNAME)</label>
+            <input id="sys-tg-username" placeholder="dr_khaste_bot">
+          </div>
+          <div class="field">
+            <label>توکن گیت‌هاب (GITHUB_TOKEN)</label>
+            <input id="sys-gh-token" type="password" placeholder="ghp_...">
+          </div>
+        </div>
+        <div class="row-2">
+          <div class="field">
+            <label>مخزن گیت‌هاب (GITHUB_REPO)</label>
+            <input id="sys-gh-repo" placeholder="username/repo">
+          </div>
+          <div class="field">
+            <label>برنچ مخزن (GITHUB_BRANCH)</label>
+            <input id="sys-gh-branch" placeholder="main">
+          </div>
+        </div>
+        <div class="row-2">
+          <div class="field">
+            <label>پوشه بکاپ‌ها (GITHUB_BACKUP_DIR)</label>
+            <input id="sys-gh-backup" placeholder="backups">
+          </div>
+          <div class="field">
+            <label>پوشه فایل‌های آپلود شده (GITHUB_FILES_DIR)</label>
+            <input id="sys-gh-files" placeholder="files">
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="saveSystemSettings()">ذخیره تنظیمات سیستم</button>
+      </div>
+
       <div class="settings-card">
-        <h3>👤 پروفایل من</h3>
+        <h3>
+          <svg class="svg-icon" viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          پروفایل من
+        </h3>
         <div class="field"><label>نام نمایشی</label><input id="profile-name"></div>
         <div class="field"><label>رنگ اختصاصی</label><input id="profile-color" type="color"></div>
         <div class="field"><label>رمز عبور جدید (اختیاری)</label><input id="profile-password" type="password" placeholder="خالی بگذارید یعنی بدون تغییر"></div>
@@ -383,10 +562,23 @@ let TASKS = [];
 let NOTES = [];
 let ADMINS = [];
 let taskFilter = 'all';
-let calDate = new Date();
+
+// تقویم شمسی
+let currentPersianYear = 1403;
+let currentPersianMonth = 1; // 1-indexed (فروردین)
 let calSelected = null;
 
 const $ = (id) => document.getElementById(id);
+
+function toggleSidebar() {
+  $('sidebar').classList.toggle('open');
+}
+
+function closeSidebarOnNavigate() {
+  if (window.innerWidth <= 820) {
+    $('sidebar').classList.remove('open');
+  }
+}
 
 function toast(msg, isErr){
   const el = document.createElement('div');
@@ -466,12 +658,19 @@ async function enterApp(){
   $('me-avatar').textContent = initials(ME.name);
   $('me-name').textContent = ME.name;
   $('me-role').textContent = ME.is_super ? 'ادمین اصلی' : 'ادمین';
-  if(ME.is_super){ $('add-admin-btn').classList.remove('hidden'); }
+  if(ME.is_super){
+    $('add-admin-btn').classList.remove('hidden');
+    $('advanced-settings-card').classList.remove('hidden');
+    loadSystemSettings();
+  }
   $('profile-name').value = ME.name;
   $('profile-color').value = ME.color;
 
   document.querySelectorAll('.nav-item[data-view]').forEach(el=>{
-    el.addEventListener('click', ()=> switchView(el.dataset.view));
+    el.addEventListener('click', ()=> {
+      switchView(el.dataset.view);
+      closeSidebarOnNavigate();
+    });
   });
   document.querySelectorAll('#task-filters .chip').forEach(el=>{
     el.addEventListener('click', ()=>{
@@ -479,6 +678,12 @@ async function enterApp(){
       el.classList.add('active'); taskFilter = el.dataset.filter; renderTasks();
     });
   });
+
+  // ست کردن پیش‌فرض ماه تقویم شمسی بر اساس تاریخ امروز
+  const todayShamsi = getShamsiDetails(new Date());
+  currentPersianYear = todayShamsi.year;
+  currentPersianMonth = todayShamsi.month;
+  calSelected = todayShamsi.gregorianDateStr;
 
   await Promise.all([loadTasks(), loadNotes(), loadAdmins(), loadTelegramStatus()]);
   renderOverview();
@@ -527,19 +732,28 @@ function taskCardHtml(t){
       <div class="task-title ${doneCls}">${escapeHtml(t.title)}</div>
       <div class="task-meta">
         <span class="badge pr-${t.priority}">${priorityLabel(t.priority)}</span>
-        ${t.due_date ? '<span>📅 '+t.due_date+'</span>' : ''}
+        ${t.due_date ? '<span><svg class="svg-icon-inline" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round"/></svg> '+t.due_date+'</span>' : ''}
         ${t.assignee_name ? '<span><span class="dot" style="display:inline-block;background:'+t.assignee_color+'"></span> '+t.assignee_name+'</span>' : '<span>بدون واگذاری</span>'}
         <span>ثبت: ${t.creator_name||''}</span>
       </div>
     </div>
     <div class="task-actions">
-      <button class="icon-btn" data-action="edit" title="ویرایش">✎</button>
-      <button class="icon-btn danger" data-action="delete" title="حذف">🗑</button>
+      <button class="icon-btn" data-action="edit" title="ویرایش">
+        <svg class="svg-icon" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <button class="icon-btn danger" data-action="delete" title="حذف">
+        <svg class="svg-icon" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
     </div>
   </div>`;
 }
 
-function emptyHtml(msg){ return `<div class="empty-state"><div class="big">🌙</div>${msg}</div>`; }
+function emptyHtml(msg){
+  return `<div class="empty-state">
+    <svg class="svg-icon-large" viewBox="0 0 24 24"><path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <div>${msg}</div>
+  </div>`;
+}
 
 function renderTasks(){
   let list = TASKS;
@@ -574,7 +788,7 @@ function openTaskModal(t){
     <div class="field"><label>عنوان</label><input id="m-title" value="${t?escapeAttr(t.title):''}"></div>
     <div class="field"><label>توضیحات</label><textarea id="m-desc" rows="3">${t?escapeHtml(t.description||''):''}</textarea></div>
     <div class="row-2">
-      <div class="field"><label>موعد</label><input id="m-due" type="date" value="${t&&t.due_date?t.due_date:''}"></div>
+      <div class="field"><label>موعد (میلادی)</label><input id="m-due" type="date" value="${t&&t.due_date?t.due_date:''}"></div>
       <div class="field"><label>اولویت</label>
         <select id="m-priority">
           ${['low','normal','high','urgent'].map(p=>`<option value="${p}" ${t&&t.priority===p?'selected':''}>${priorityLabel(p)}</option>`).join('')}
@@ -608,32 +822,106 @@ function openTaskModal(t){
   });
 }
 
-/* ---------------- تقویم ---------------- */
+/* ---------------- تقویم خورشیدی ایران با متد بومی ICU ---------------- */
 const DOW = ['ش','ی','د','س','چ','پ','ج'];
+const PERSIAN_MONTH_NAMES = [
+  'فروردین', 'اردیبهشت', 'خرداد',
+  'تیر', 'مرداد', 'شهریور',
+  'مهر', 'آبان', 'آذر',
+  'دی', 'بهمن', 'اسفند'
+];
+
+function getShamsiDetails(date) {
+  const parts = new Intl.DateTimeFormat('en-US-u-ca-persian', {
+    year: 'numeric', month: 'numeric', day: 'numeric'
+  }).formatToParts(date);
+  const year = parseInt(parts.find(p => p.type === 'year').value, 10);
+  const month = parseInt(parts.find(p => p.type === 'month').value, 10);
+  const day = parseInt(parts.find(p => p.type === 'day').value, 10);
+  return { year, month, day, gregorianDateStr: date.toISOString().slice(0,10) };
+}
+
+// تولید روزهای یک ماه شمسی خاص
+function getPersianMonthDays(year, month) {
+  let approxGregYear = year + 621;
+  let gMonth = 0;
+  if (month === 1) { gMonth = 2; }
+  else if (month === 2) { gMonth = 3; }
+  else if (month === 3) { gMonth = 4; }
+  else if (month === 4) { gMonth = 5; }
+  else if (month === 5) { gMonth = 6; }
+  else if (month === 6) { gMonth = 7; }
+  else if (month === 7) { gMonth = 8; }
+  else if (month === 8) { gMonth = 9; }
+  else if (month === 9) { gMonth = 10; }
+  else if (month === 10) { gMonth = 11; }
+  else if (month === 11) { approxGregYear = year + 622; gMonth = 0; }
+  else if (month === 12) { approxGregYear = year + 622; gMonth = 1; }
+
+  const baseDate = new Date(approxGregYear, gMonth, 15);
+
+  let day1Gregorian = null;
+  for (let i = 0; i < 15; i++) {
+    const testDate = new Date(baseDate.getTime() + i * 24 * 60 * 60 * 1000);
+    const details = getShamsiDetails(testDate);
+    if (details.year === year && details.month === month && details.day === 1) {
+      day1Gregorian = testDate;
+      break;
+    }
+  }
+
+  const days = [];
+  let current = new Date(day1Gregorian);
+  while (true) {
+    const details = getShamsiDetails(current);
+    if (details.year !== year || details.month !== month) {
+      break;
+    }
+    days.push({
+      persianDay: details.day,
+      gregorianDateStr: details.gregorianDateStr,
+      gregorianDate: new Date(current)
+    });
+    current = new Date(current.getTime() + 24 * 60 * 60 * 1000);
+  }
+  return days;
+}
+
+function getPersianWeekdayIndex(gregorianDate) {
+  const d = gregorianDate.getDay(); // 0 is Sunday, 6 is Saturday
+  return (d + 1) % 7; // نگاشت شنبه به 0، یکشنبه به 1، و جمعه به 6
+}
+
 function renderCalendar(){
   $('cal-dow').innerHTML = DOW.map(d=>`<div class="cal-dow">${d}</div>`).join('');
-  const y = calDate.getFullYear(), m = calDate.getMonth();
-  $('cal-title').textContent = calDate.toLocaleDateString('fa-IR', {year:'numeric', month:'long'});
+  $('cal-title').textContent = `${PERSIAN_MONTH_NAMES[currentPersianMonth - 1]} ${currentPersianYear}`;
 
-  const first = new Date(y, m, 1);
-  const startOffset = (first.getDay()+1) % 7; // شروع هفته از شنبه
-  const daysInMonth = new Date(y, m+1, 0).getDate();
-  const daysInPrev = new Date(y, m, 0).getDate();
+  const days = getPersianMonthDays(currentPersianYear, currentPersianMonth);
+  const firstDay = days[0];
+  const startOffset = getPersianWeekdayIndex(firstDay.gregorianDate);
 
   const cells = [];
-  for(let i=startOffset-1;i>=0;i--) cells.push({d:daysInPrev-i, other:true});
-  for(let d=1; d<=daysInMonth; d++) cells.push({d, other:false, y, m});
-  while(cells.length % 7 !== 0) cells.push({d:cells.length, other:true});
+  // خانه‌های خالی ماه قبل
+  for(let i=0; i<startOffset; i++) {
+    cells.push({ other: true });
+  }
+  // روزهای اصلی ماه
+  for(const d of days) {
+    cells.push({ ...d, other: false });
+  }
+  // پر کردن خانه‌های آخر جدول تا مضرب ۷
+  while(cells.length % 7 !== 0) {
+    cells.push({ other: true });
+  }
 
   const todayStr = new Date().toISOString().slice(0,10);
   $('cal-grid').innerHTML = cells.map(c=>{
-    if(c.other) return `<div class="cal-day other-month"><span>${c.d}</span></div>`;
-    const dateStr = `${y}-${String(m+1).padStart(2,'0')}-${String(c.d).padStart(2,'0')}`;
-    const dayTasks = TASKS.filter(t=>t.due_date===dateStr);
-    const isToday = dateStr===todayStr;
-    const isSel = dateStr===calSelected;
+    if(c.other) return `<div class="cal-day other-month"></div>`;
+    const dayTasks = TASKS.filter(t=>t.due_date===c.gregorianDateStr);
+    const isToday = c.gregorianDateStr===todayStr;
+    const isSel = c.gregorianDateStr===calSelected;
     const dots = dayTasks.slice(0,4).map(t=>`<span class="dot pr-${t.priority}" style="background:currentColor"></span>`).join('');
-    return `<div class="cal-day ${isToday?'today':''} ${isSel?'selected':''}" data-date="${dateStr}"><span>${c.d}</span><div class="cal-dots">${dots}</div></div>`;
+    return `<div class="cal-day ${isToday?'today':''} ${isSel?'selected':''}" data-date="${c.gregorianDateStr}"><span>${c.persianDay}</span><div class="cal-dots">${dots}</div></div>`;
   }).join('');
 
   document.querySelectorAll('.cal-day[data-date]').forEach(el=>{
@@ -642,13 +930,25 @@ function renderCalendar(){
   if(!calSelected) calSelected = todayStr;
   renderCalDayTasks();
 }
+
 function renderCalDayTasks(){
   $('cal-day-label').textContent = 'تسک‌های ' + calSelected;
   const list = TASKS.filter(t=>t.due_date===calSelected);
   $('cal-day-tasks').innerHTML = list.length ? list.map(taskCardHtml).join('') : emptyHtml('تسکی برای این روز نیست.');
   bindTaskCardEvents('cal-day-tasks');
 }
-function calShift(dir){ calDate.setMonth(calDate.getMonth()+dir); renderCalendar(); }
+
+function calShift(dir){
+  currentPersianMonth += dir;
+  if (currentPersianMonth > 12) {
+    currentPersianMonth = 1;
+    currentPersianYear += 1;
+  } else if (currentPersianMonth < 1) {
+    currentPersianMonth = 12;
+    currentPersianYear -= 1;
+  }
+  renderCalendar();
+}
 
 /* ---------------- یادداشت‌ها ---------------- */
 function renderNotes(){
@@ -659,8 +959,12 @@ function renderNotes(){
       <div class="note-footer">
         <div class="note-author"><span class="dot" style="background:${n.creator_color}"></span>${n.creator_name||'—'}</div>
         <div class="task-actions">
-          <button class="icon-btn" data-edit="${n.id}">✎</button>
-          <button class="icon-btn danger" data-del="${n.id}">🗑</button>
+          <button class="icon-btn" data-edit="${n.id}">
+            <svg class="svg-icon" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <button class="icon-btn danger" data-del="${n.id}">
+            <svg class="svg-icon" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
         </div>
       </div>
     </div>
@@ -738,7 +1042,7 @@ function openAdminModal(){
   });
 }
 
-/* ---------------- تنظیمات: تلگرام / بکاپ / پروفایل ---------------- */
+/* ---------------- تنظیمات: تلگرام / بکاپ / پروفایل / سیستم پیشرفته ---------------- */
 async function loadTelegramStatus(){
   const on = ME.telegram_linked;
   $('tg-dot').className = 'status-dot ' + (on?'on':'off');
@@ -763,6 +1067,44 @@ async function manualBackup(){
   try{ await api('/backup', {method:'POST'}); toast('بکاپ با موفقیت در گیت‌هاب ذخیره شد ✅'); }
   catch(e){ toast('خطا در بکاپ: '+e.message, true); }
 }
+
+// مدیریت متغیرهای سیستم از داخل اپلیکیشن
+async function loadSystemSettings() {
+  try {
+    const res = await api('/settings');
+    const s = res.settings || {};
+    $('sys-tg-token').value = s.TELEGRAM_BOT_TOKEN || '';
+    $('sys-tg-webhook').value = s.TELEGRAM_WEBHOOK_SECRET || '';
+    $('sys-tg-username').value = s.TELEGRAM_BOT_USERNAME || '';
+    $('sys-gh-token').value = s.GITHUB_TOKEN || '';
+    $('sys-gh-repo').value = s.GITHUB_REPO || '';
+    $('sys-gh-branch').value = s.GITHUB_BRANCH || '';
+    $('sys-gh-backup').value = s.GITHUB_BACKUP_DIR || '';
+    $('sys-gh-files').value = s.GITHUB_FILES_DIR || '';
+  } catch (e) {
+    toast('خطا در بارگذاری تنظیمات سیستم: ' + e.message, true);
+  }
+}
+
+async function saveSystemSettings() {
+  const body = {
+    TELEGRAM_BOT_TOKEN: $('sys-tg-token').value,
+    TELEGRAM_WEBHOOK_SECRET: $('sys-tg-webhook').value,
+    TELEGRAM_BOT_USERNAME: $('sys-tg-username').value,
+    GITHUB_TOKEN: $('sys-gh-token').value,
+    GITHUB_REPO: $('sys-gh-repo').value,
+    GITHUB_BRANCH: $('sys-gh-branch').value,
+    GITHUB_BACKUP_DIR: $('sys-gh-backup').value,
+    GITHUB_FILES_DIR: $('sys-gh-files').value,
+  };
+  try {
+    await api('/settings', { method: 'POST', body });
+    toast('تنظیمات پیشرفته سیستم با موفقیت ذخیره شد ✅');
+  } catch (e) {
+    toast(e.message, true);
+  }
+}
+
 async function saveProfile(){
   const body = { name: $('profile-name').value.trim(), color: $('profile-color').value };
   const pass = $('profile-password').value;
