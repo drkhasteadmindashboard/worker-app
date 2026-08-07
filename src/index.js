@@ -196,6 +196,56 @@ async function handleApi(request, env, url) {
     return json({ ok: true });
   }
 
+  // --- میز کار و گفتگوی تیمی (بدون قابلیت حذف و ویرایش) ---
+  if (path === '/messages' && method === 'GET') {
+    try {
+      const { results } = await env.DB.prepare(
+        `SELECT messages.*, admins.name as sender_name, admins.color as sender_color
+         FROM messages
+         JOIN admins ON admins.id = messages.admin_id
+         ORDER BY messages.created_at ASC LIMIT 100`
+      ).all();
+      return json({ messages: results });
+    } catch (e) {
+      // خودبهبودی جدول در دیتابیس قدیمی
+      await env.DB.prepare(
+        `CREATE TABLE IF NOT EXISTS messages (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          admin_id INTEGER NOT NULL,
+          content TEXT NOT NULL,
+          created_at TEXT NOT NULL DEFAULT (datetime('now')),
+          FOREIGN KEY (admin_id) REFERENCES admins(id) ON DELETE CASCADE
+        )`
+      ).run().catch(()=>{});
+      return json({ messages: [] });
+    }
+  }
+
+  if (path === '/messages' && method === 'POST') {
+    const { content } = await readJson(request);
+    if (!content || !content.trim()) return err('متن پیام نمی‌تواند خالی باشد.');
+    try {
+      await env.DB.prepare('INSERT INTO messages (admin_id, content) VALUES (?, ?)')
+        .bind(me.id, content.trim())
+        .run();
+      return json({ ok: true });
+    } catch (e) {
+      await env.DB.prepare(
+        `CREATE TABLE IF NOT EXISTS messages (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          admin_id INTEGER NOT NULL,
+          content TEXT NOT NULL,
+          created_at TEXT NOT NULL DEFAULT (datetime('now')),
+          FOREIGN KEY (admin_id) REFERENCES admins(id) ON DELETE CASCADE
+        )`
+      ).run().catch(()=>{});
+      await env.DB.prepare('INSERT INTO messages (admin_id, content) VALUES (?, ?)')
+        .bind(me.id, content.trim())
+        .run();
+      return json({ ok: true });
+    }
+  }
+
   // --- ادمین‌ها ---
   if (path === '/admins' && method === 'GET') {
     const { results } = await env.DB.prepare('SELECT * FROM admins ORDER BY created_at ASC').all();

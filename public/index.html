@@ -248,6 +248,71 @@ button{font-family:inherit;}
 .status-dot.on{background:var(--success);box-shadow:0 0 8px var(--success);}
 .status-dot.off{background:var(--text-dim);}
 
+/* ---------- میز کار و گفتگوی تیمی ---------- */
+.chat-container{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  height:60vh;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
+.chat-messages{
+  flex:1;
+  overflow-y:auto;
+  padding:20px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+.chat-bubble{
+  max-width:75%;
+  padding:10px 14px;
+  border-radius:14px;
+  background:var(--surface-2);
+  position:relative;
+  border-right:3px solid var(--bubble-color, var(--accent));
+  align-self:flex-start;
+}
+.chat-bubble.me{
+  align-self:flex-end;
+  border-right:none;
+  border-left:3px solid var(--bubble-color, var(--accent));
+}
+.chat-meta-info{
+  font-size:11px;
+  color:var(--text-dim);
+  margin-bottom:4px;
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.chat-content-text{
+  font-size:13.5px;
+  line-height:1.6;
+  white-space:pre-wrap;
+}
+.chat-input-bar{
+  padding:14px;
+  border-top:1px solid var(--border);
+  background:var(--bg);
+  display:flex;
+  gap:10px;
+}
+.chat-input-bar input{
+  flex:1;
+  background:var(--surface-2);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:11px 14px;
+  color:var(--text);
+  outline:none;
+}
+.chat-input-bar input:focus{
+  border-color:var(--accent);
+}
+
 /* ---------- مودال ---------- */
 .modal-overlay{
   position:fixed;inset:0;background:rgba(5,7,14,.6);backdrop-filter:blur(3px);
@@ -277,14 +342,18 @@ button{font-family:inherit;}
   }
   .sidebar {
     position: fixed;
-    top: 57px; /* ارتفاع هدر موبایل */
-    right: -260px; /* مخفی در حالت عادی */
-    height: calc(100vh - 57px);
-    width: 260px;
-    box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+    top: 0; /* چسبیده به سقفِ سقف روی موبایل */
+    right: -270px; /* مخفی در حالت عادی */
+    height: 100vh; /* تمام ارتفاع صفحه */
+    width: 270px;
+    box-shadow: -10px 0 40px rgba(0,0,0,0.6);
+    z-index: 1000; /* روی همه‌چیز */
   }
   .sidebar.open {
     right: 0;
+  }
+  #sidebar-close-btn {
+    display: block !important;
   }
   .main {
     padding: 20px 16px;
@@ -352,7 +421,12 @@ button{font-family:inherit;}
 <!-- ================= اپ اصلی ================= -->
 <div id="app" class="app-shell hidden">
   <aside class="sidebar" id="sidebar">
-    <div class="brand"><span class="brand-dot"></span><h1>دکتر خسته</h1></div>
+    <div class="brand" style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+      <div style="display:flex; align-items:center; gap:10px;"><span class="brand-dot"></span><h1>دکتر خسته</h1></div>
+      <button onclick="toggleSidebar()" style="background:none; border:none; color:var(--text-dim); cursor:pointer; display:none;" id="sidebar-close-btn">
+        <svg class="svg-icon" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
     <nav>
       <div class="nav-item active" data-view="overview">
         <svg class="svg-icon" viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -365,6 +439,10 @@ button{font-family:inherit;}
       <div class="nav-item" data-view="calendar">
         <svg class="svg-icon" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round"/></svg>
         <span>تقویم</span>
+      </div>
+      <div class="nav-item" data-view="chat">
+        <svg class="svg-icon" viewBox="0 0 24 24"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>میز کار و گفتگو</span>
       </div>
       <div class="nav-item" data-view="notes">
         <svg class="svg-icon" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -436,6 +514,41 @@ button{font-family:inherit;}
       <div class="cal-day-tasks">
         <h3 style="font-size:14px;" id="cal-day-label"></h3>
         <div class="task-list" id="cal-day-tasks"></div>
+
+        <!-- فرم ثبت سریع تسک برای روز انتخاب شده -->
+        <div id="cal-quick-add" class="settings-card" style="margin-top: 18px; padding: 16px;">
+          <h4 style="margin:0 0 10px; font-size:13px; color:var(--accent2); display:flex; align-items:center; gap:6px;">
+            <svg class="svg-icon-inline" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            ثبت سریع تسک برای این روز
+          </h4>
+          <div style="display:flex; flex-wrap:wrap; gap:10px;">
+            <input id="q-title" placeholder="عنوان تسک..." style="flex:2; min-width:180px; padding:8px 12px; border-radius:8px; border:1px solid var(--border); background:var(--surface-2); color:var(--text); outline:none;">
+            <select id="q-priority" style="flex:1; min-width:100px; padding:8px; border-radius:8px; border:1px solid var(--border); background:var(--surface-2); color:var(--text); outline:none;">
+              <option value="normal">عادی</option>
+              <option value="low">کم</option>
+              <option value="high">بالا</option>
+              <option value="urgent">فوری</option>
+            </select>
+            <select id="q-assignee" style="flex:1; min-width:120px; padding:8px; border-radius:8px; border:1px solid var(--border); background:var(--surface-2); color:var(--text); outline:none;">
+              <option value="">واگذار به...</option>
+            </select>
+            <button class="btn btn-primary btn-sm" onclick="submitQuickTask()">ثبت</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- میز کار و گفتگو -->
+    <section class="view" id="view-chat">
+      <div class="view-header"><div><h2>میز کار و گفتگو</h2><p>مکالمه و توافقات تیمی بدون قابلیت ویرایش یا حذف پیام‌ها</p></div></div>
+      <div class="chat-container">
+        <div class="chat-messages" id="chat-messages"></div>
+        <div class="chat-input-bar">
+          <input id="chat-input" placeholder="پیام خود را بنویسید..." onkeydown="if(event.key==='Enter') sendChatMessage()">
+          <button class="btn btn-primary" onclick="sendChatMessage()">
+            ارسال
+          </button>
+        </div>
       </div>
     </section>
 
@@ -670,6 +783,9 @@ async function enterApp(){
     el.addEventListener('click', ()=> {
       switchView(el.dataset.view);
       closeSidebarOnNavigate();
+      if(el.dataset.view === 'chat') {
+        loadChatMessages();
+      }
     });
   });
   document.querySelectorAll('#task-filters .chip').forEach(el=>{
@@ -691,6 +807,7 @@ async function enterApp(){
   renderCalendar();
   renderNotes();
   renderAdmins();
+  populateAssigneeSelects();
 }
 
 function switchView(name){
@@ -703,6 +820,12 @@ function switchView(name){
 async function loadTasks(){ const r = await api('/tasks'); TASKS = r.tasks; }
 async function loadNotes(){ const r = await api('/notes'); NOTES = r.notes; }
 async function loadAdmins(){ const r = await api('/admins'); ADMINS = r.admins; }
+
+function populateAssigneeSelects() {
+  const options = '<option value="">— واگذار به... —</option>' + ADMINS.map(a=>`<option value="${a.id}">${a.name}</option>`).join('');
+  const qAssignee = $('q-assignee');
+  if(qAssignee) qAssignee.innerHTML = options;
+}
 
 /* ---------------- نمای کلی ---------------- */
 function renderOverview(){
@@ -725,6 +848,12 @@ function priorityLabel(p){ return {urgent:'فوری',high:'بالا',normal:'ع�
 
 function taskCardHtml(t){
   const doneCls = t.status==='done' ? 'done' : '';
+  let shamsiLabel = '';
+  if (t.due_date) {
+    const sh = gregorianToShamsi(t.due_date);
+    if (sh) shamsiLabel = `${sh.year}/${sh.month}/${sh.day}`;
+  }
+
   return `
   <div class="task-card" data-id="${t.id}">
     <div class="task-check ${doneCls}" data-action="toggle"></div>
@@ -732,7 +861,7 @@ function taskCardHtml(t){
       <div class="task-title ${doneCls}">${escapeHtml(t.title)}</div>
       <div class="task-meta">
         <span class="badge pr-${t.priority}">${priorityLabel(t.priority)}</span>
-        ${t.due_date ? '<span><svg class="svg-icon-inline" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round"/></svg> '+t.due_date+'</span>' : ''}
+        ${t.due_date ? '<span><svg class="svg-icon-inline" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round"/></svg> ' + shamsiLabel + ' (' + t.due_date + ')</span>' : ''}
         ${t.assignee_name ? '<span><span class="dot" style="display:inline-block;background:'+t.assignee_color+'"></span> '+t.assignee_name+'</span>' : '<span>بدون واگذاری</span>'}
         <span>ثبت: ${t.creator_name||''}</span>
       </div>
@@ -783,31 +912,59 @@ function bindTaskCardEvents(containerId){
 function openTaskModal(t){
   const isEdit = !!t;
   const assigneeOptions = ADMINS.map(a=>`<option value="${a.id}" ${t&&t.assigned_to===a.id?'selected':''}>${a.name}</option>`).join('');
-  const modal = openModal(`
+
+  // لود تاریخ به فرمت شمسی در مودال
+  let currentSh = { year: 1403, month: 1, day: 1 };
+  if (t && t.due_date) {
+    const extracted = gregorianToShamsi(t.due_date);
+    if (extracted) currentSh = extracted;
+  } else {
+    currentSh = getShamsiDetails(new Date());
+  }
+
+  const daysOptions = Array.from({length:31}, (_, i)=>`<option value="${i+1}" ${currentSh.day===i+1?'selected':''}>${i+1}</option>`).join('');
+  const monthsOptions = PERSIAN_MONTH_NAMES.map((m, i)=>`<option value="${i+1}" ${currentSh.month===i+1?'selected':''}>${m}</option>`).join('');
+  const yearsOptions = Array.from({length:11}, (_, i)=>`<option value="${1400+i}" ${currentSh.year===(1400+i)?'selected':''}>${1400+i}</option>`).join('');
+
+  openModal(`
     <h3>${isEdit?'ویرایش تسک':'تسک جدید'}</h3>
     <div class="field"><label>عنوان</label><input id="m-title" value="${t?escapeAttr(t.title):''}"></div>
     <div class="field"><label>توضیحات</label><textarea id="m-desc" rows="3">${t?escapeHtml(t.description||''):''}</textarea></div>
+
+    <label style="display:block; font-size:13px; color:var(--text-dim); margin-bottom:6px;">موعد (تاریخ شمسی)</label>
+    <div class="row-2" style="grid-template-columns: 1fr 1fr 1fr; margin-bottom:14px;">
+      <div class="field" style="margin-bottom:0;"><select id="m-sh-day">${daysOptions}</select></div>
+      <div class="field" style="margin-bottom:0;"><select id="m-sh-month">${monthsOptions}</select></div>
+      <div class="field" style="margin-bottom:0;"><select id="m-sh-year">${yearsOptions}</select></div>
+    </div>
+
     <div class="row-2">
-      <div class="field"><label>موعد (میلادی)</label><input id="m-due" type="date" value="${t&&t.due_date?t.due_date:''}"></div>
       <div class="field"><label>اولویت</label>
         <select id="m-priority">
           ${['low','normal','high','urgent'].map(p=>`<option value="${p}" ${t&&t.priority===p?'selected':''}>${priorityLabel(p)}</option>`).join('')}
         </select>
       </div>
+      <div class="field"><label>واگذار به</label>
+        <select id="m-assignee"><option value="">— بدون واگذاری —</option>${assigneeOptions}</select>
+      </div>
     </div>
-    <div class="field"><label>واگذار به</label>
-      <select id="m-assignee"><option value="">— بدون واگذاری —</option>${assigneeOptions}</select>
-    </div>
+
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeModal()">انصراف</button>
       <button class="btn btn-primary" id="m-save">ذخیره</button>
     </div>
   `);
+
   $('m-save').addEventListener('click', async ()=>{
+    const shYear = Number($('m-sh-year').value);
+    const shMonth = Number($('m-sh-month').value);
+    const shDay = Number($('m-sh-day').value);
+    const due_date = shamsiToGregorian(shYear, shMonth, shDay);
+
     const body = {
       title: $('m-title').value.trim(),
       description: $('m-desc').value,
-      due_date: $('m-due').value || null,
+      due_date: due_date,
       priority: $('m-priority').value,
       assigned_to: $('m-assignee').value ? Number($('m-assignee').value) : null,
     };
@@ -823,22 +980,51 @@ function openTaskModal(t){
 }
 
 /* ---------------- تقویم خورشیدی ایران با متد بومی ICU ---------------- */
-const DOW = ['ش','ی','د','س','چ','پ','ج'];
+const DOW = ["ش", "ی", "د", "س", "چ", "پ", "ج"];
 const PERSIAN_MONTH_NAMES = [
-  'فروردین', 'اردیبهشت', 'خرداد',
-  'تیر', 'مرداد', 'شهریور',
-  'مهر', 'آبان', 'آذر',
-  'دی', 'بهمن', 'اسفند'
+  "فروردین", "اردیبهشت", "خرداد",
+  "تیر", "مرداد", "شهریور",
+  "مهر", "آبان", "آذر",
+  "دی", "بهمن", "اسفند"
 ];
 
 function getShamsiDetails(date) {
-  const parts = new Intl.DateTimeFormat('en-US-u-ca-persian', {
-    year: 'numeric', month: 'numeric', day: 'numeric'
+  const parts = new Intl.DateTimeFormat("en-US-u-ca-persian", {
+    year: "numeric", month: "numeric", day: "numeric", timeZone: "UTC"
   }).formatToParts(date);
-  const year = parseInt(parts.find(p => p.type === 'year').value, 10);
-  const month = parseInt(parts.find(p => p.type === 'month').value, 10);
-  const day = parseInt(parts.find(p => p.type === 'day').value, 10);
+  const year = parseInt(parts.find(p => p.type === "year").value, 10);
+  const month = parseInt(parts.find(p => p.type === "month").value, 10);
+  const day = parseInt(parts.find(p => p.type === "day").value, 10);
   return { year, month, day, gregorianDateStr: date.toISOString().slice(0,10) };
+}
+
+function gregorianToShamsi(gDateStr) {
+  if (!gDateStr) return null;
+  const parts = gDateStr.split("-");
+  const date = new Date(Date.UTC(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2])));
+  return getShamsiDetails(date);
+}
+
+function shamsiToGregorian(jy, jm, jd) {
+  let approxGregYear = jy + 621;
+  let gMonth = 0;
+  if (jm <= 10) {
+    gMonth = jm + 1;
+  } else {
+    approxGregYear = jy + 622;
+    gMonth = jm - 11;
+  }
+
+  let baseDate = new Date(Date.UTC(approxGregYear, gMonth, jd + 19));
+  let scanStart = new Date(baseDate.getTime() - 10 * 24 * 60 * 60 * 1000);
+  for (let i = 0; i < 20; i++) {
+    const testDate = new Date(scanStart.getTime() + i * 24 * 60 * 60 * 1000);
+    const details = getShamsiDetails(testDate);
+    if (details.year === jy && details.month === jm && details.day === jd) {
+      return details.gregorianDateStr;
+    }
+  }
+  return null;
 }
 
 // تولید روزهای یک ماه شمسی خاص
@@ -858,7 +1044,7 @@ function getPersianMonthDays(year, month) {
   else if (month === 11) { approxGregYear = year + 622; gMonth = 0; }
   else if (month === 12) { approxGregYear = year + 622; gMonth = 1; }
 
-  const baseDate = new Date(approxGregYear, gMonth, 15);
+  const baseDate = new Date(Date.UTC(approxGregYear, gMonth, 15));
 
   let day1Gregorian = null;
   for (let i = 0; i < 15; i++) {
@@ -932,7 +1118,10 @@ function renderCalendar(){
 }
 
 function renderCalDayTasks(){
-  $('cal-day-label').textContent = 'تسک‌های ' + calSelected;
+  const sh = gregorianToShamsi(calSelected);
+  const shLabel = sh ? `${sh.year}/${sh.month}/${sh.day}` : calSelected;
+  $('cal-day-label').textContent = 'تسک‌های روز ' + shLabel + ' (' + calSelected + ')';
+
   const list = TASKS.filter(t=>t.due_date===calSelected);
   $('cal-day-tasks').innerHTML = list.length ? list.map(taskCardHtml).join('') : emptyHtml('تسکی برای این روز نیست.');
   bindTaskCardEvents('cal-day-tasks');
@@ -948,6 +1137,82 @@ function calShift(dir){
     currentPersianYear -= 1;
   }
   renderCalendar();
+}
+
+// ثبت سریع تسک برای روز انتخاب شده در تقویم
+async function submitQuickTask() {
+  const title = $('q-title').value.trim();
+  const priority = $('q-priority').value;
+  const assignee = $('q-assignee').value ? Number($('q-assignee').value) : null;
+
+  if (!title) {
+    toast('لطفاً عنوان تسک را وارد کنید.', true);
+    return;
+  }
+
+  const body = {
+    title,
+    description: 'ثبت شده از تقویم برای تاریخ ' + calSelected,
+    due_date: calSelected,
+    priority,
+    assigned_to: assignee
+  };
+
+  try {
+    await api('/tasks', { method: 'POST', body });
+    $('q-title').value = '';
+    await loadTasks();
+    renderOverview();
+    renderTasks();
+    renderCalendar();
+    toast('تسک جدید ثبت و به تقویم اضافه شد! ✅');
+  } catch (e) {
+    toast(e.message, true);
+  }
+}
+
+/* ---------------- میز کار و گفتگوی تیمی ---------------- */
+async function loadChatMessages() {
+  try {
+    const res = await api('/messages');
+    const messages = res.messages || [];
+    const container = $('chat-messages');
+
+    container.innerHTML = messages.length ? messages.map(m => {
+      const isMe = m.admin_id === ME.id;
+      const bubbleClass = 'chat-bubble' + (isMe ? ' me' : '');
+      const timeStr = m.created_at.slice(11, 16); // Extract HH:MM
+
+      return `
+        <div class="${bubbleClass}" style="--bubble-color: ${m.sender_color}">
+          <div class="chat-meta-info">
+            <span style="font-weight:700; color:${m.sender_color}">${escapeHtml(m.sender_name)}</span>
+            <span>${timeStr}</span>
+          </div>
+          <div class="chat-content-text">${escapeHtml(m.content)}</div>
+        </div>
+      `;
+    }).join('') : `<div class="empty-state" style="padding: 24px;">هیچ پیامی در این گفتگو ثبت نشده است. شروع به مکالمه کنید! 💬</div>`;
+
+    // Auto-scroll to bottom
+    container.scrollTop = container.scrollHeight;
+  } catch (e) {
+    toast('خطا در بارگذاری پیام‌ها: ' + e.message, true);
+  }
+}
+
+async function sendChatMessage() {
+  const input = $('chat-input');
+  const content = input.value.trim();
+  if (!content) return;
+
+  try {
+    await api('/messages', { method: 'POST', body: { content } });
+    input.value = '';
+    await loadChatMessages();
+  } catch (e) {
+    toast(e.message, true);
+  }
 }
 
 /* ---------------- یادداشت‌ها ---------------- */
@@ -1064,7 +1329,7 @@ async function unlinkTelegram(){
   ME.telegram_linked = false; loadTelegramStatus(); toast('اتصال تلگرام قطع شد');
 }
 async function manualBackup(){
-  try{ await api('/backup', {method:'POST'}); toast('بکاپ با موفقیت در گیت‌هاب ذخیره شد ✅'); }
+  try{ api('/backup', {method:'POST'}); toast('بکاپ با موفقیت در گیت‌هاب ذخیره شد ✅'); }
   catch(e){ toast('خطا در بکاپ: '+e.message, true); }
 }
 
