@@ -390,23 +390,36 @@ async function handleApi(request, env, url) {
     return json({ ok: true });
   }
 
-  // --- یادداشت‌ها ---
+  // --- یادداشت‌ها (ابسیدین استایل با پوشه‌بندی و مارک‌دان) ---
   if (path === '/notes' && method === 'GET') {
-    const { results } = await env.DB.prepare(
-      `SELECT notes.*, admins.name as creator_name, admins.color as creator_color
-       FROM notes LEFT JOIN admins ON admins.id = notes.created_by
-       ORDER BY notes.created_at DESC`
-    ).all();
-    return json({ notes: results });
+    try {
+      const { results } = await env.DB.prepare(
+        `SELECT notes.*, admins.name as creator_name, admins.color as creator_color
+         FROM notes LEFT JOIN admins ON admins.id = notes.created_by
+         ORDER BY notes.created_at DESC`
+      ).all();
+      return json({ notes: results });
+    } catch (e) {
+      // خودبهبودی جدول برای اضافه کردن ستون folder در دیتابیس قدیمی
+      try {
+        await env.DB.prepare("ALTER TABLE notes ADD COLUMN folder TEXT NOT NULL DEFAULT 'عمومی'").run();
+      } catch (err) {}
+      const { results } = await env.DB.prepare(
+        `SELECT notes.*, admins.name as creator_name, admins.color as creator_color
+         FROM notes LEFT JOIN admins ON admins.id = notes.created_by
+         ORDER BY notes.created_at DESC`
+      ).all();
+      return json({ notes: results });
+    }
   }
 
   if (path === '/notes' && method === 'POST') {
-    const { title, content, color } = await readJson(request);
+    const { title, content, color, folder } = await readJson(request);
     if (!title) return err('عنوان یادداشت الزامی است.');
     const result = await env.DB.prepare(
-      'INSERT INTO notes (title, content, color, created_by) VALUES (?,?,?,?)'
+      'INSERT INTO notes (title, content, color, folder, created_by) VALUES (?,?,?,?,?)'
     )
-      .bind(title, content || '', color || me.color, me.id)
+      .bind(title, content || '', color || me.color, folder || 'عمومی', me.id)
       .run();
     return json({ id: result.meta.last_row_id });
   }
@@ -414,12 +427,13 @@ async function handleApi(request, env, url) {
   const noteIdMatch = path.match(/^\/notes\/(\d+)$/);
   if (noteIdMatch && method === 'PUT') {
     const id = Number(noteIdMatch[1]);
-    const { title, content, color } = await readJson(request);
+    const { title, content, color, folder } = await readJson(request);
     const fields = [];
     const binds = [];
     if (title !== undefined) { fields.push('title = ?'); binds.push(title); }
     if (content !== undefined) { fields.push('content = ?'); binds.push(content); }
     if (color !== undefined) { fields.push('color = ?'); binds.push(color); }
+    if (folder !== undefined) { fields.push('folder = ?'); binds.push(folder); }
     fields.push("updated_at = datetime('now')");
     binds.push(id);
     await env.DB.prepare(`UPDATE notes SET ${fields.join(', ')} WHERE id = ?`).bind(...binds).run();

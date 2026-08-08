@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jetbrains-mono@1.0.6/css/jetbrains-mono.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <style>
 :root{
   --bg:#0b0f19;
@@ -23,6 +24,19 @@
   --radius:16px;
   --mono:'JetBrains Mono',monospace;
 }
+:root.light-mode {
+  --bg:#f4f6fa;
+  --surface:#ffffff;
+  --surface-2:#f0f2f6;
+  --border:#e2e8f0;
+  --text:#1a202c;
+  --text-dim:#4a5568;
+  --accent:#dd6b20;
+  --accent-dim:#fbd38d;
+  --accent2:#319795;
+  --danger:#e53e3e;
+  --success:#38a169;
+}
 *{box-sizing:border-box;}
 html,body{margin:0;padding:0;}
 body{
@@ -34,6 +48,7 @@ body{
   font-family:'Vazirmatn',sans-serif;
   min-height:100vh;
   overflow-x:hidden;
+  transition: background 0.3s, color 0.3s;
 }
 ::selection{background:var(--accent);color:#1a1206;}
 a{color:inherit;}
@@ -63,7 +78,7 @@ button{font-family:inherit;}
 .field input,.field select,.field textarea{
   width:100%;padding:11px 13px;border-radius:10px;border:1px solid var(--border);
   background:var(--surface-2);color:var(--text);font-family:inherit;font-size:14px;outline:none;
-  transition:border-color .15s;
+  transition:border-color .15s, background 0.15s;
 }
 .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent);}
 .field input[type=color]{padding:4px;height:42px;cursor:pointer;}
@@ -136,7 +151,7 @@ button{font-family:inherit;}
 .sidebar{
   width:260px;flex-shrink:0;background:var(--surface);border-left:1px solid var(--border);
   display:flex;flex-direction:column;padding:22px 16px;position:sticky;top:0;height:100vh;
-  transition: transform 0.3s ease, right 0.3s ease;
+  transition: transform 0.3s ease, right 0.3s ease, background 0.3s;
   z-index: 95;
 }
 .sidebar .brand{padding:0 6px;margin-bottom:22px;}
@@ -220,21 +235,152 @@ button{font-family:inherit;}
 .cal-dots .dot{width:6px;height:6px;}
 .cal-day-tasks{margin-top:18px;}
 
-/* ---------- یادداشت‌ها ---------- */
-.notes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;}
-.note-card{
-  border-radius:16px;padding:16px;position:relative;min-height:140px;display:flex;flex-direction:column;
-  border:1px solid var(--border); background:var(--surface);
-  border-top:4px solid var(--note-color, var(--accent));
+/* ---------- یادداشت‌ها (ابسیدین استایل سه ستونه) ---------- */
+.obsidian-layout {
+  display: grid;
+  grid-template-columns: 240px 280px 1fr;
+  gap: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  height: calc(100vh - 160px);
+  overflow: hidden;
 }
-.note-title{font-weight:700;font-size:15px;margin-bottom:6px;}
-.note-content{font-size:13px;color:var(--text-dim);flex:1;white-space:pre-wrap;line-height:1.6;}
-.note-footer{display:flex;align-items:center;justify-content:space-between;margin-top:12px;padding-top:10px;border-top:1px dashed var(--border);}
-.note-author{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--text-dim);}
-.note-author .dot{width:8px;height:8px;}
+.obsidian-folders {
+  border-left: 1px solid var(--border);
+  background: var(--bg);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+}
+.folder-title {
+  font-size: 13px;
+  color: var(--text-dim);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.folder-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.folder-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13.5px;
+  color: var(--text-dim);
+  transition: 0.15s;
+}
+.folder-item:hover, .folder-item.active {
+  background: var(--surface-2);
+  color: var(--text);
+}
+.folder-badge {
+  background: var(--border);
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 99px;
+  color: var(--text-dim);
+}
+.obsidian-notes-list {
+  border-left: 1px solid var(--border);
+  background: var(--surface);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+}
+.obsidian-card {
+  padding: 12px;
+  border-radius: 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: 0.15s;
+}
+.obsidian-card:hover, .obsidian-card.active {
+  border-color: var(--accent);
+}
+.obsidian-card h4 {
+  margin: 0 0 6px 0;
+  font-size: 14px;
+}
+.obsidian-card p {
+  margin: 0;
+  font-size: 11.5px;
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.obsidian-editor {
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  height: 100%;
+}
+.editor-toolbar {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.editor-tabs {
+  display: flex;
+  gap: 6px;
+}
+.editor-main-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 16px;
+}
+.markdown-editor {
+  width: 100%;
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  resize: none;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 14.5px;
+  line-height: 1.7;
+}
+.markdown-preview {
+  flex: 1;
+  overflow-y: auto;
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--text);
+  padding: 10px;
+}
+.markdown-preview h1, .markdown-preview h2, .markdown-preview h3 {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 6px;
+}
+.markdown-preview img {
+  max-width: 100%;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
 
 /* ---------- ادمین‌ها ---------- */
-.admin-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;}
 .admin-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;text-align:center;}
 .admin-card .avatar{width:52px;height:52px;font-size:18px;margin:0 auto 10px;}
 .super-tag{display:inline-block;margin-top:6px;font-size:10.5px;background:rgba(242,161,84,.14);color:var(--accent);padding:2px 9px;border-radius:999px;}
@@ -369,6 +515,15 @@ button{font-family:inherit;}
     padding: 4px;
     font-size: 11px;
   }
+  .obsidian-layout {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+  .obsidian-folders, .obsidian-notes-list {
+    border-left: none;
+    border-bottom: 1px solid var(--border);
+    max-height: 200px;
+  }
 }
 @media(max-width:480px){
   .stat-grid {
@@ -428,6 +583,15 @@ button{font-family:inherit;}
         <svg class="svg-icon" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
     </div>
+
+    <!-- دکمه سوییچ تم دارک/لایت -->
+    <div style="padding:0 6px 16px 6px;">
+      <button class="btn btn-ghost btn-block" onclick="toggleTheme()" style="justify-content: flex-start; gap:10px;">
+        <svg class="svg-icon" viewBox="0 0 24 24" id="theme-btn-icon"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M14 12a2 2 0 11-4 0 2 2 0 014 0z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span id="theme-btn-text">تم روشن</span>
+      </button>
+    </div>
+
     <nav>
       <div class="nav-item active" data-view="overview">
         <svg class="svg-icon" viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -447,7 +611,7 @@ button{font-family:inherit;}
       </div>
       <div class="nav-item" data-view="notes">
         <svg class="svg-icon" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        <span>یادداشت‌ها</span>
+        <span>یادداشت‌ها (پوشه‌ای)</span>
       </div>
       <div class="nav-item" data-view="admins" id="nav-admins">
         <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -573,16 +737,55 @@ button{font-family:inherit;}
       </div>
     </section>
 
-    <!-- یادداشت‌ها -->
+    <!-- یادداشت‌ها (ابسیدین استایل با پوشه بندی و مارک‌دان) -->
     <section class="view" id="view-notes">
       <div class="view-header">
-        <div><h2>یادداشت‌ها</h2><p>یادداشت‌های تیم با رنگ و نویسنده اختصاصی</p></div>
-        <button class="btn btn-primary" onclick="openNoteModal()">
-          <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          یادداشت جدید
-        </button>
+        <div><h2>یادداشت‌های تیمی (ادسیدین استایل)</h2><p>مدیریت با ساختار پوشه‌ای و ویرایشگر پیشرفته مارک‌دان با پشتیبانی آپلود فایل روی گیت‌هاب</p></div>
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn-ghost" onclick="createNewFolderPrompt()">+ پوشه جدید</button>
+          <button class="btn btn-primary" onclick="createNewNoteObsidian()">+ یادداشت جدید</button>
+        </div>
       </div>
-      <div class="notes-grid" id="notes-grid"></div>
+
+      <div class="obsidian-layout">
+        <!-- ستون اول: پوشه‌ها -->
+        <div class="obsidian-folders">
+          <div class="folder-title">
+            <span>📁 پوشه‌ها (سیستم فایل)</span>
+          </div>
+          <div class="folder-list" id="obsidian-folder-list"></div>
+        </div>
+
+        <!-- ستون دوم: لیست یادداشت‌ها -->
+        <div class="obsidian-notes-list" id="obsidian-notes-list"></div>
+
+        <!-- ستون سوم: ویرایشگر و پیش‌نمایش -->
+        <div class="obsidian-editor">
+          <div class="editor-toolbar">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <input id="note-title-input" placeholder="عنوان یادداشت..." style="background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:6px 12px; color:var(--text); outline:none; font-weight:700;">
+              <select id="note-folder-select" style="background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:6px; color:var(--text); outline:none;"></select>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <!-- دکمه آپلود تصویر به گیت‌هاب -->
+              <input type="file" id="note-file-upload" class="hidden" onchange="uploadFileToGithubInNote(this)">
+              <button class="btn btn-ghost btn-sm" onclick="$('note-file-upload').click()">
+                📎 آپلود فایل به گیت‌هاب
+              </button>
+
+              <div class="editor-tabs">
+                <button class="btn btn-ghost btn-sm active" id="tab-edit" onclick="setEditorTab('edit')">✍️ ویرایش</button>
+                <button class="btn btn-ghost btn-sm" id="tab-preview" onclick="setEditorTab('preview')">👁 پیش‌نمایش</button>
+              </div>
+              <button class="btn btn-primary btn-sm" onclick="saveActiveNoteObsidian()">ذخیره</button>
+            </div>
+          </div>
+          <div class="editor-main-area">
+            <textarea id="note-textarea" class="markdown-editor" placeholder="# یادداشت مارک‌دان خود را در این بخش بنویسید..."></textarea>
+            <div id="note-preview-div" class="markdown-preview hidden"></div>
+          </div>
+        </div>
+      </div>
     </section>
 
     <!-- ادمین‌ها -->
@@ -705,7 +908,32 @@ let calSelected = null;
 let statusChartInstance = null;
 let priorityChartInstance = null;
 
+// فولدربندی ابسیدین
+let activeFolder = 'عمومی';
+let activeNote = null;
+let editorTab = 'edit'; // edit or preview
+
 const $ = (id) => document.getElementById(id);
+
+// --- تم دارک و لایت مود ---
+function initTheme() {
+  const saved = localStorage.getItem('theme');
+  if (saved === 'light') {
+    document.documentElement.classList.add('light-mode');
+    $('theme-btn-text').textContent = 'تم تیره';
+    $('theme-btn-icon').innerHTML = '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" stroke-linecap="round" stroke-linejoin="round" />';
+  } else {
+    document.documentElement.classList.remove('light-mode');
+    $('theme-btn-text').textContent = 'تم روشن';
+    $('theme-btn-icon').innerHTML = '<path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M14 12a2 2 0 11-4 0 2 2 0 014 0z" stroke-linecap="round" stroke-linejoin="round" />';
+  }
+}
+
+function toggleTheme() {
+  const isLight = document.documentElement.classList.toggle('light-mode');
+  localStorage.setItem('theme', isLight ? 'light' : 'dark');
+  initTheme();
+}
 
 function toggleSidebar() {
   $('sidebar').classList.toggle('open');
@@ -740,6 +968,7 @@ function initials(name){ return (name||'?').trim().slice(0,1); }
 
 /* ---------------- بوت ---------------- */
 async function boot(){
+  initTheme();
   try{
     const s = await api('/setup/status');
     if(s.needsSetup){ show('setup-screen'); return; }
@@ -809,6 +1038,8 @@ async function enterApp(){
       closeSidebarOnNavigate();
       if(el.dataset.view === 'chat') {
         loadChatMessages();
+      } else if(el.dataset.view === 'notes') {
+        renderObsidianNotes();
       }
     });
   });
@@ -900,7 +1131,7 @@ function renderOverviewCharts() {
       plugins: {
         legend: {
           position: 'bottom',
-          labels: { color: '#e9edf7', font: { family: 'Vazirmatn', size: 11 } }
+          labels: { color: 'var(--text)', font: { family: 'Vazirmatn', size: 11 } }
         }
       }
     }
@@ -930,11 +1161,11 @@ function renderOverviewCharts() {
       scales: {
         x: {
           grid: { display: false },
-          ticks: { color: '#e9edf7', font: { family: 'Vazirmatn' } }
+          ticks: { color: 'var(--text)', font: { family: 'Vazirmatn' } }
         },
         y: {
-          grid: { color: '#232d47' },
-          ticks: { color: '#e9edf7', font: { family: 'Vazirmatn' }, precision: 0 }
+          grid: { color: 'var(--border)' },
+          ticks: { color: 'var(--text)', font: { family: 'Vazirmatn' }, precision: 0 }
         }
       }
     }
@@ -1313,58 +1544,172 @@ async function sendChatMessage() {
   }
 }
 
-/* ---------------- یادداشت‌ها ---------------- */
-function renderNotes(){
-  $('notes-grid').innerHTML = NOTES.length ? NOTES.map(n=>`
-    <div class="note-card" style="--note-color:${n.color}">
-      <div class="note-title">${escapeHtml(n.title)}</div>
-      <div class="note-content">${escapeHtml(n.content||'')}</div>
-      <div class="note-footer">
-        <div class="note-author"><span class="dot" style="background:${n.creator_color}"></span>${n.creator_name||'—'}</div>
-        <div class="task-actions">
-          <button class="icon-btn" data-edit="${n.id}">
-            <svg class="svg-icon" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </button>
-          <button class="icon-btn danger" data-del="${n.id}">
-            <svg class="svg-icon" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </button>
-        </div>
-      </div>
-    </div>
-  `).join('') : emptyHtml('هنوز یادداشتی ثبت نشده.');
+/* ---------------- یادداشت‌ها (ابسیدین استایل با سیستم فولدری و مارک‌دان) ---------------- */
+function renderObsidianNotes() {
+  // ۱. استخراج پوشه‌ها
+  const folders = [...new Set(NOTES.map(n => n.folder || 'عمومی'))];
+  if (!folders.includes('عمومی')) folders.push('عمومی');
+  if (!folders.includes(activeFolder)) folders.push(activeFolder);
 
-  document.querySelectorAll('[data-edit]').forEach(b=>b.addEventListener('click', ()=>{
-    const n = NOTES.find(x=>x.id===Number(b.dataset.edit)); openNoteModal(n);
-  }));
-  document.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click', async ()=>{
-    if(!confirm('این یادداشت حذف شود؟')) return;
-    await api('/notes/'+b.dataset.del, {method:'DELETE'});
-    await loadNotes(); renderNotes(); renderOverview();
-  }));
+  // ۲. رندر کردن لیست پوشه‌ها در ستون اول
+  $('obsidian-folder-list').innerHTML = folders.map(f => {
+    const count = NOTES.filter(n => (n.folder || 'عمومی') === f).length;
+    const activeClass = f === activeFolder ? 'active' : '';
+    return `
+      <div class="folder-item ${activeClass}" onclick="setActiveFolderObsidian('${escapeAttr(f)}')">
+        <span>📁 ${escapeHtml(f)}</span>
+        <span class="folder-badge">${count}</span>
+      </div>
+    `;
+  }).join('');
+
+  // ۳. رندر کردن لیست یادداشت‌های پوشه فعال در ستون دوم
+  const folderNotes = NOTES.filter(n => (n.folder || 'عمومی') === activeFolder);
+  $('obsidian-notes-list').innerHTML = folderNotes.length ? folderNotes.map(n => {
+    const activeClass = activeNote && activeNote.id === n.id ? 'active' : '';
+    const contentSneak = n.content ? n.content.slice(0, 45) : 'یادداشت خالی...';
+    return `
+      <div class="obsidian-card ${activeClass}" onclick="setActiveNoteObsidian(${n.id})">
+        <h4>${escapeHtml(n.title)}</h4>
+        <p>${escapeHtml(contentSneak)}</p>
+      </div>
+    `;
+  }).join('') : `<div class="empty-state" style="font-size:12px; padding:24px;">یادداشتی در این پوشه نیست.</div>`;
+
+  // ۴. پر کردن سلکتور پوشه‌ها در ویرایشگر
+  $('note-folder-select').innerHTML = folders.map(f => `<option value="${escapeAttr(f)}" ${activeFolder === f ? 'selected' : ''}>${escapeHtml(f)}</option>`).join('');
+
+  // ۵. به‌روزرسانی محتوای ویرایشگر بر اساس یادداشت فعال
+  if (activeNote) {
+    $('note-title-input').value = activeNote.title;
+    $('note-textarea').value = activeNote.content || '';
+    $('note-folder-select').value = activeNote.folder || 'عمومی';
+  } else {
+    $('note-title-input').value = '';
+    $('note-textarea').value = '';
+  }
+
+  updateMarkdownPreview();
 }
 
-function openNoteModal(n){
-  const isEdit = !!n;
-  openModal(`
-    <h3>${isEdit?'ویرایش یادداشت':'یادداشت جدید'}</h3>
-    <div class="field"><label>عنوان</label><input id="n-title" value="${n?escapeAttr(n.title):''}"></div>
-    <div class="field"><label>متن</label><textarea id="n-content" rows="5">${n?escapeHtml(n.content||''):''}</textarea></div>
-    <div class="field"><label>رنگ یادداشت</label><input id="n-color" type="color" value="${n?n.color:ME.color}"></div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeModal()">انصراف</button>
-      <button class="btn btn-primary" id="n-save">ذخیره</button>
-    </div>
-  `);
-  $('n-save').addEventListener('click', async ()=>{
-    const body = { title: $('n-title').value.trim(), content: $('n-content').value, color: $('n-color').value };
-    if(!body.title){ toast('عنوان الزامی است', true); return; }
-    try{
-      if(isEdit) await api('/notes/'+n.id, {method:'PUT', body});
-      else await api('/notes', {method:'POST', body});
-      closeModal(); await loadNotes(); renderNotes(); renderOverview();
-      toast('ذخیره شد ✅');
-    }catch(e){ toast(e.message, true); }
-  });
+function setActiveFolderObsidian(folderName) {
+  activeFolder = folderName;
+  activeNote = null;
+  renderObsidianNotes();
+}
+
+function setActiveNoteObsidian(noteId) {
+  activeNote = NOTES.find(n => n.id === noteId);
+  renderObsidianNotes();
+}
+
+function setEditorTab(tab) {
+  editorTab = tab;
+  $('tab-edit').classList.toggle('active', tab === 'edit');
+  $('tab-preview').classList.toggle('active', tab === 'preview');
+
+  if (tab === 'preview') {
+    updateMarkdownPreview();
+    $('note-textarea').classList.add('hidden');
+    $('note-preview-div').classList.remove('hidden');
+  } else {
+    $('note-textarea').classList.remove('hidden');
+    $('note-preview-div').classList.add('hidden');
+  }
+}
+
+function updateMarkdownPreview() {
+  const content = $('note-textarea').value;
+  // رندر مارک‌دان با marked
+  try {
+    $('note-preview-div').innerHTML = marked.parse(content || '*پیش‌نمایش خالی است*');
+  } catch(e) {
+    $('note-preview-div').innerHTML = content;
+  }
+}
+
+function createNewFolderPrompt() {
+  const f = prompt('لطفاً نام پوشه جدید را وارد کنید:');
+  if (f && f.trim()) {
+    activeFolder = f.trim();
+    renderObsidianNotes();
+    toast('پوشه جدید ایجاد شد 📁');
+  }
+}
+
+function createNewNoteObsidian() {
+  activeNote = null;
+  $('note-title-input').value = 'یادداشت بدون عنوان';
+  $('note-textarea').value = '';
+  setEditorTab('edit');
+  renderObsidianNotes();
+}
+
+async function saveActiveNoteObsidian() {
+  const title = $('note-title-input').value.trim();
+  const content = $('note-textarea').value;
+  const folder = $('note-folder-select').value;
+
+  if (!title) {
+    toast('عنوان یادداشت الزامی است.', true);
+    return;
+  }
+
+  const body = { title, content, folder };
+
+  try {
+    if (activeNote) {
+      await api('/notes/' + activeNote.id, { method: 'PUT', body });
+      toast('یادداشت بروزرسانی شد ✅');
+    } else {
+      const res = await api('/notes', { method: 'POST', body });
+      toast('یادداشت جدید ذخیره شد ✅');
+    }
+    await loadNotes();
+    // پیدا کردن یادداشت ذخیره شده
+    const updated = NOTES.find(n => n.title === title && n.folder === folder);
+    if (updated) activeNote = updated;
+    renderObsidianNotes();
+    renderNotes();
+  } catch (e) {
+    toast(e.message, true);
+  }
+}
+
+// آپلود فایل ضمیمه در حین ویرایش یادداشت مارک‌دان مستقیم روی گیت‌هاب
+async function uploadFileToGithubInNote(inputEl) {
+  const file = inputEl.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = async () => {
+    const dataBase64 = reader.result;
+    toast('در حال آپلود فایل به گیت‌هاب...');
+    try {
+      const res = await api('/upload', {
+        method: 'POST',
+        body: { filename: file.name, dataBase64 }
+      });
+      // افزودن تگ مارک‌دان تصویر به ویرایشگر
+      const mdTag = `\n\n![${file.name}](${res.url})\n\n`;
+      const textarea = $('note-textarea');
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const text = textarea.value;
+      textarea.value = text.substring(0, start) + mdTag + text.substring(end);
+      textarea.focus();
+      updateMarkdownPreview();
+      toast('فایل با موفقیت روی گیت‌هاب هاست شد! 🚀');
+    } catch (e) {
+      toast('خطا در آپلود گیت‌هاب: ' + e.message, true);
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+// رندر قدیمی کارت‌های یادداشت ساده
+function renderNotes(){
+  // این تابع برای حفظ همخوانی با نمای کلی وجود دارد
 }
 
 /* ---------------- ادمین‌ها ---------------- */

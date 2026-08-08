@@ -43,6 +43,7 @@ CREATE TABLE IF NOT EXISTS notes (
   title TEXT NOT NULL,
   content TEXT,
   color TEXT NOT NULL DEFAULT '#4fd1c5',
+  folder TEXT NOT NULL DEFAULT 'عمومی',      -- پوشه‌بندی ابسیدین
   created_by INTEGER NOT NULL,
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at TEXT NOT NULL DEFAULT (datetime('now')),
