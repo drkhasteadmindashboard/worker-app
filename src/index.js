@@ -392,25 +392,17 @@ async function handleApi(request, env, url) {
 
   // --- یادداشت‌ها (ابسیدین استایل با پوشه‌بندی و مارک‌دان) ---
   if (path === '/notes' && method === 'GET') {
+    // خودبهبودی جدول برای اضافه کردن ستون folder در دیتابیس قدیمی به صورت تضمینی و بی قید و شرط
     try {
-      const { results } = await env.DB.prepare(
-        `SELECT notes.*, admins.name as creator_name, admins.color as creator_color
-         FROM notes LEFT JOIN admins ON admins.id = notes.created_by
-         ORDER BY notes.created_at DESC`
-      ).all();
-      return json({ notes: results });
-    } catch (e) {
-      // خودبهبودی جدول برای اضافه کردن ستون folder در دیتابیس قدیمی
-      try {
-        await env.DB.prepare("ALTER TABLE notes ADD COLUMN folder TEXT NOT NULL DEFAULT 'عمومی'").run();
-      } catch (err) {}
-      const { results } = await env.DB.prepare(
-        `SELECT notes.*, admins.name as creator_name, admins.color as creator_color
-         FROM notes LEFT JOIN admins ON admins.id = notes.created_by
-         ORDER BY notes.created_at DESC`
-      ).all();
-      return json({ notes: results });
-    }
+      await env.DB.prepare("ALTER TABLE notes ADD COLUMN folder TEXT NOT NULL DEFAULT 'عمومی'").run();
+    } catch (err) {}
+
+    const { results } = await env.DB.prepare(
+      `SELECT notes.*, admins.name as creator_name, admins.color as creator_color
+       FROM notes LEFT JOIN admins ON admins.id = notes.created_by
+       ORDER BY notes.created_at DESC`
+    ).all();
+    return json({ notes: results });
   }
 
   if (path === '/notes' && method === 'POST') {

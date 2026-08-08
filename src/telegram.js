@@ -1,4 +1,4 @@
-// ادغام تلگرام: ارسال پیام و پردازش وبهوک ربات همراه با دکمه‌های شیشه‌ای تعاملی
+// ادغام تلگرام: ارسال پیام و پردازش وبهوک ربات همراه با دکمه‌های شیشه‌ای تعاملی و اتصال مستقیم با آیدی عددی
 import { getSetting } from './config.js';
 
 export async function tgSend(env, chatId, text) {
@@ -92,13 +92,13 @@ export async function handleTelegramWebhook(request, env) {
     const data = cb.data;
     const callbackQueryId = cb.id;
 
-    // پیدا کردن ادمین بر اساس آیدی عددی تلگرام
+    // پیدا کردن ادمین بر اساس آیدی عددی تلگرام به صورت مستقیم
     const admin = await env.DB.prepare('SELECT * FROM admins WHERE telegram_chat_id = ?')
       .bind(String(fromId))
       .first();
 
     if (!admin) {
-      await answerCallbackQuery(env, callbackQueryId, '❌ حساب تلگرام شما هنوز در داشبورد ثبت نشده یا متصل نیست.');
+      await answerCallbackQuery(env, callbackQueryId, `❌ حساب تلگرام شما متصل نیست. آیدی عددی شما: ${fromId}`);
       return new Response('ok');
     }
 
@@ -134,59 +134,50 @@ export async function handleTelegramWebhook(request, env) {
   const chatId = msg.chat.id;
   const text = msg.text.trim();
 
-  if (text.startsWith('/start')) {
-    const parts = text.split(/\s+/);
-    const code = parts[1];
-    if (code) {
-      const admin = await env.DB.prepare('SELECT * FROM admins WHERE telegram_link_code = ?')
-        .bind(code)
-        .first();
-      if (admin) {
-        await env.DB.prepare(
-          'UPDATE admins SET telegram_chat_id = ?, telegram_link_code = NULL WHERE id = ?'
-        )
-          .bind(String(chatId), admin.id)
-          .run();
-        await tgSend(env, chatId, `✅ حساب «${admin.name}» با موفقیت به دکتر خسته وصل شد.\nاز این پس یادآوری موعد تسک‌ها اینجا ارسال می‌شود.\n\nدستورات: /tasks برای دیدن تسک‌های باز`);
-      } else {
-        await tgSend(env, chatId, '❌ کد نامعتبر یا منقضی‌شده است. یک کد جدید از داشبورد (بخش تنظیمات تلگرام) بگیرید.');
-      }
-    } else {
+  // پیدا کردن ادمین بر اساس آیدی عددی تلگرام به صورت مستقیم
+  const admin = await env.DB.prepare('SELECT * FROM admins WHERE telegram_chat_id = ?')
+    .bind(String(chatId))
+    .first();
+
+  if (admin) {
+    if (text.startsWith('/start')) {
       await tgSend(
         env,
         chatId,
-        '👋 سلام! به ربات «دکتر خسته» خوش آمدید.\n\nبرای اتصال حساب ادمین خودتان، وارد داشبورد شوید، از بخش «اتصال تلگرام» یک کد بگیرید و اینجا به‌صورت زیر ارسال کنید:\n/start CODE'
+        `👋 سلام <b>${admin.name}</b> عزیز!\n\nحساب شما با موفقیت شناسایی شد و به سیستم «دکتر خسته» متصل است.\n\nاز این پس پیام‌ها و دکمه‌های تعاملی تغییرات تسک‌ها را مستقیماً همین‌جا دریافت خواهید کرد!\n\n📋 دستورات:\n/tasks — نمایش لیست تسک‌های باز`
       );
-    }
-    return new Response('ok');
-  }
-
-  if (text === '/tasks' || text === '/تسکها' || text === '/تسک‌ها') {
-    const admin = await env.DB.prepare('SELECT * FROM admins WHERE telegram_chat_id = ?')
-      .bind(String(chatId))
-      .first();
-    if (!admin) {
-      await tgSend(env, chatId, 'حساب شما هنوز وصل نیست. ابتدا /start CODE را ارسال کنید.');
       return new Response('ok');
     }
-    const { results } = await env.DB.prepare(
-      "SELECT * FROM tasks WHERE status != 'done' ORDER BY (due_date IS NULL), due_date ASC LIMIT 15"
-    ).all();
-    if (!results.length) {
-      await tgSend(env, chatId, '🎉 هیچ تسک بازی وجود ندارد!');
+
+    if (text === '/tasks' || text === '/تسکها' || text === '/تسک‌ها') {
+      const { results } = await env.DB.prepare(
+        "SELECT * FROM tasks WHERE status != 'done' ORDER BY (due_date IS NULL), due_date ASC LIMIT 15"
+      ).all();
+      if (!results.length) {
+        await tgSend(env, chatId, '🎉 هیچ تسک بازی وجود ندارد!');
+        return new Response('ok');
+      }
+      const icons = { urgent: '🔴', high: '🟠', normal: '🟡', low: '⚪️' };
+      let out = '📋 <b>تسک‌های باز:</b>\n\n';
+      for (const t of results) {
+        out += `${icons[t.priority] || '⚪️'} ${t.title}${t.due_date ? '  —  موعد: ' + t.due_date : ''}\n`;
+      }
+      await tgSend(env, chatId, out);
       return new Response('ok');
     }
-    const icons = { urgent: '🔴', high: '🟠', normal: '🟡', low: '⚪️' };
-    let out = '📋 <b>تسک‌های باز:</b>\n\n';
-    for (const t of results) {
-      out += `${icons[t.priority] || '⚪️'} ${t.title}${t.due_date ? '  —  موعد: ' + t.due_date : ''}\n`;
-    }
-    await tgSend(env, chatId, out);
-    return new Response('ok');
-  }
 
-  if (text === '/help' || text === '/راهنما') {
-    await tgSend(env, chatId, 'دستورات:\n/start CODE — اتصال حساب\n/tasks — نمایش تسک‌های باز');
+    if (text === '/help' || text === '/راهنما') {
+      await tgSend(env, chatId, 'دستورات ربات دکتر خسته:\n/tasks — نمایش تسک‌های باز\n/help — نمایش راهنمای ربات');
+      return new Response('ok');
+    }
+  } else {
+    // راهنمای ساده کپی پیست آیدی تلگرام در پنل بدون نیاز به کدهای پیچیده
+    await tgSend(
+      env,
+      chatId,
+      `👋 سلام! به ربات «دکتر خسته» خوش آمدید.\n\n⚠️ حساب تلگرام شما هنوز به هیچ ادمینی متصل نیست.\n\n<b>آیدی عددی تلگرام شما:</b>\n<code>${chatId}</code>\n\nلطفاً این آیدی عددی را کپی کرده و در پنل وب داشبورد (منوی ادمین‌ها -> ویرایش ادمین شما -> آیدی عددی تلگرام) وارد و ذخیره کنید تا ربات فوراً حساب شما را فعال کند!`
+    );
+    return new Response('ok');
   }
 
   return new Response('ok');

@@ -1646,29 +1646,31 @@ function createNewNoteObsidian() {
 }
 
 async function saveActiveNoteObsidian() {
-  const title = $('note-title-input').value.trim();
-  const content = $('note-textarea').value;
-  const folder = $('note-folder-select').value;
+  const title = $("note-title-input").value.trim();
+  const content = $("note-textarea").value;
+  const folder = $("note-folder-select").value;
 
   if (!title) {
-    toast('عنوان یادداشت الزامی است.', true);
+    toast("عنوان یادداشت الزامی است.", true);
     return;
   }
 
   const body = { title, content, folder };
 
   try {
+    let noteId = activeNote ? activeNote.id : null;
     if (activeNote) {
-      await api('/notes/' + activeNote.id, { method: 'PUT', body });
-      toast('یادداشت بروزرسانی شد ✅');
+      await api("/notes/" + activeNote.id, { method: "PUT", body });
+      toast("یادداشت بروزرسانی شد ✅");
     } else {
-      const res = await api('/notes', { method: 'POST', body });
-      toast('یادداشت جدید ذخیره شد ✅');
+      const res = await api("/notes", { method: "POST", body });
+      noteId = res.id;
+      toast("یادداشت جدید ذخیره شد ✅");
     }
     await loadNotes();
-    // پیدا کردن یادداشت ذخیره شده
-    const updated = NOTES.find(n => n.title === title && n.folder === folder);
-    if (updated) activeNote = updated;
+    if (noteId) {
+      activeNote = NOTES.find(n => n.id === noteId);
+    }
     renderObsidianNotes();
     renderNotes();
   } catch (e) {
