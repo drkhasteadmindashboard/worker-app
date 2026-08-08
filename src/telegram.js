@@ -1,4 +1,4 @@
-// ادغام تلگرام: ارسال پیام و پردازش وبهوک ربات
+// ادغام تلگرام: ارسال پیام و پردازش وبهوک ربات همراه با دکمه‌های شیشه‌ای تعاملی
 import { getSetting } from './config.js';
 
 export async function tgSend(env, chatId, text) {
@@ -15,6 +15,48 @@ export async function tgSend(env, chatId, text) {
   }
 }
 
+export async function tgSendInline(env, chatId, text, replyMarkup) {
+  const botToken = await getSetting(env, 'TELEGRAM_BOT_TOKEN');
+  if (!chatId || !botToken) return;
+  try {
+    await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML', reply_markup: replyMarkup }),
+    });
+  } catch (e) {
+    console.error('telegram send inline error', e);
+  }
+}
+
+export async function answerCallbackQuery(env, callbackQueryId, text) {
+  const botToken = await getSetting(env, 'TELEGRAM_BOT_TOKEN');
+  if (!botToken) return;
+  try {
+    await fetch(`https://api.telegram.org/bot${botToken}/answerCallbackQuery`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ callback_query_id: callbackQueryId, text, show_alert: true }),
+    });
+  } catch (e) {
+    console.error('telegram answerCallbackQuery error', e);
+  }
+}
+
+export async function editMessageText(env, chatId, messageId, text) {
+  const botToken = await getSetting(env, 'TELEGRAM_BOT_TOKEN');
+  if (!botToken) return;
+  try {
+    await fetch(`https://api.telegram.org/bot${botToken}/editMessageText`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: chatId, message_id: messageId, text, parse_mode: 'HTML' }),
+    });
+  } catch (e) {
+    console.error('telegram editMessageText error', e);
+  }
+}
+
 export async function notifyAllAdmins(env, text, excludeAdminId = null) {
   const { results } = await env.DB.prepare(
     'SELECT id, telegram_chat_id FROM admins WHERE telegram_chat_id IS NOT NULL'
@@ -25,12 +67,65 @@ export async function notifyAllAdmins(env, text, excludeAdminId = null) {
   }
 }
 
+export async function notifyAllAdminsInline(env, text, replyMarkup, excludeAdminId = null) {
+  const { results } = await env.DB.prepare(
+    'SELECT id, telegram_chat_id FROM admins WHERE telegram_chat_id IS NOT NULL'
+  ).all();
+  for (const a of results) {
+    if (excludeAdminId && a.id === excludeAdminId) continue;
+    await tgSendInline(env, a.telegram_chat_id, text, replyMarkup);
+  }
+}
+
 export async function handleTelegramWebhook(request, env) {
   let update;
   try {
     update = await request.json();
   } catch {
     return new Response('bad request', { status: 400 });
+  }
+
+  // --- هندل کردن دکمه‌های شیشه‌ای (Callback Queries) ---
+  const cb = update.callback_query;
+  if (cb) {
+    const fromId = cb.from.id;
+    const data = cb.data;
+    const callbackQueryId = cb.id;
+
+    // پیدا کردن ادمین بر اساس آیدی عددی تلگرام
+    const admin = await env.DB.prepare('SELECT * FROM admins WHERE telegram_chat_id = ?')
+      .bind(String(fromId))
+      .first();
+
+    if (!admin) {
+      await answerCallbackQuery(env, callbackQueryId, '❌ حساب تلگرام شما هنوز در داشبورد ثبت نشده یا متصل نیست.');
+      return new Response('ok');
+    }
+
+    const parts = data.split(':');
+    const action = parts[0];
+    const taskId = parseInt(parts[1], 10);
+
+    const task = await env.DB.prepare('SELECT * FROM tasks WHERE id = ?').bind(taskId).first();
+    if (!task) {
+      await answerCallbackQuery(env, callbackQueryId, '❌ این تسک یافت نشد یا ممکن است حذف شده باشد.');
+      return new Response('ok');
+    }
+
+    if (action === 'complete') {
+      await env.DB.prepare("UPDATE tasks SET status = 'done', updated_at = datetime('now') WHERE id = ?").bind(taskId).run();
+      await answerCallbackQuery(env, callbackQueryId, '✅ تسک تکمیل و ثبت شد.');
+      await editMessageText(env, cb.message.chat.id, cb.message.message_id, `✅ <b>تسک تکمیل شد:</b>\n<s>${task.title}</s>\n\nتکمیل‌کننده: <b>${admin.name}</b>`);
+    } else if (action === 'inprogress') {
+      await env.DB.prepare("UPDATE tasks SET status = 'in_progress', updated_at = datetime('now') WHERE id = ?").bind(taskId).run();
+      await answerCallbackQuery(env, callbackQueryId, '🔄 تسک به وضعیت در حال انجام تغییر کرد.');
+      await editMessageText(env, cb.message.chat.id, cb.message.message_id, `🔄 <b>تسک در حال انجام است:</b>\n«${task.title}»\n\nمسئول شروع: <b>${admin.name}</b>`);
+    } else if (action === 'assign') {
+      await env.DB.prepare("UPDATE tasks SET assigned_to = ?, updated_at = datetime('now') WHERE id = ?").bind(admin.id, taskId).run();
+      await answerCallbackQuery(env, callbackQueryId, '🙋‍♂️ تسک به شما واگذار شد.');
+      await editMessageText(env, cb.message.chat.id, cb.message.message_id, `🙋‍♂️ <b>تسک واگذار شد به:</b>\n«${task.title}»\n\nمسئول جدید: <b>${admin.name}</b>`);
+    }
+    return new Response('ok');
   }
 
   const msg = update.message;

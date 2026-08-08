@@ -10,7 +10,7 @@ import {
   getSessionAdmin,
   publicAdmin,
 } from './auth.js';
-import { tgSend, notifyAllAdmins, handleTelegramWebhook } from './telegram.js';
+import { tgSend, tgSendInline, notifyAllAdmins, notifyAllAdminsInline, handleTelegramWebhook } from './telegram.js';
 import { backupDatabaseToGithub, uploadFileToGithub } from './github.js';
 import { getSetting, setSetting } from './config.js';
 
@@ -248,22 +248,22 @@ async function handleApi(request, env, url) {
 
   // --- ادمین‌ها ---
   if (path === '/admins' && method === 'GET') {
-    const { results } = await env.DB.prepare('SELECT * FROM admins ORDER BY created_at ASC').all();
+    const { results } = await env.DB.prepare('SELECT id, username, name, color, is_super, telegram_chat_id, created_at FROM admins ORDER BY created_at ASC').all();
     return json({ admins: results.map(publicAdmin) });
   }
 
   if (path === '/admins' && method === 'POST') {
     if (!me.is_super) return err('فقط ادمین اصلی می‌تواند ادمین بسازد.', 403);
-    const { username, password, name, color } = await readJson(request);
+    const { username, password, name, color, telegram_chat_id } = await readJson(request);
     if (!username || !password || !name) return err('نام کاربری، رمز عبور و نام الزامی است.');
     const exists = await env.DB.prepare('SELECT id FROM admins WHERE username = ?').bind(username).first();
     if (exists) return err('این نام کاربری قبلاً استفاده شده است.');
     const salt = randomHex(16);
     const hash = await hashPassword(password, salt);
     const result = await env.DB.prepare(
-      'INSERT INTO admins (username, password_hash, salt, name, color, is_super) VALUES (?,?,?,?,?,0)'
+      'INSERT INTO admins (username, password_hash, salt, name, color, telegram_chat_id, is_super) VALUES (?,?,?,?,?,?,0)'
     )
-      .bind(username, hash, salt, name, color || '#4fd1c5')
+      .bind(username, hash, salt, name, color || '#4fd1c5', telegram_chat_id || null)
       .run();
     const admin = await env.DB.prepare('SELECT * FROM admins WHERE id = ?').bind(result.meta.last_row_id).first();
     return json({ admin: publicAdmin(admin) });
@@ -273,7 +273,7 @@ async function handleApi(request, env, url) {
   if (adminIdMatch && method === 'PUT') {
     const targetId = Number(adminIdMatch[1]);
     if (targetId !== me.id && !me.is_super) return err('اجازه ندارید.', 403);
-    const { name, color, password } = await readJson(request);
+    const { name, color, password, telegram_chat_id } = await readJson(request);
     const fields = [];
     const binds = [];
     if (name) {
@@ -289,6 +289,10 @@ async function handleApi(request, env, url) {
       const hash = await hashPassword(password, salt);
       fields.push('salt = ?', 'password_hash = ?');
       binds.push(salt, hash);
+    }
+    if (telegram_chat_id !== undefined) {
+      fields.push('telegram_chat_id = ?');
+      binds.push(telegram_chat_id ? telegram_chat_id.trim() : null);
     }
     if (!fields.length) return err('چیزی برای تغییر ارسال نشده.');
     binds.push(targetId);
@@ -329,14 +333,27 @@ async function handleApi(request, env, url) {
       .run();
     const taskId = result.meta.last_row_id;
 
+    // ارسال نوتیفیکیشن دکمه‌های شیشه‌ای تعاملی به تلگرام
+    const notifyText = `🆕 <b>تسک جدید توسط ${me.name}:</b>\n«${title}»${due_date ? '\nموعد: ' + due_date : ''}`;
+    const replyMarkup = {
+      inline_keyboard: [
+        [
+          { text: '✅ تکمیل تسک', callback_data: `complete:${taskId}` },
+          { text: '🔄 در حال انجام', callback_data: `inprogress:${taskId}` }
+        ],
+        [
+          { text: '🙋‍♂️ واگذاری به من', callback_data: `assign:${taskId}` }
+        ]
+      ]
+    };
+
     let chatTarget = null;
     if (assigned_to) {
       const a = await env.DB.prepare('SELECT telegram_chat_id FROM admins WHERE id = ?').bind(assigned_to).first();
       chatTarget = a && a.telegram_chat_id;
     }
-    const notifyText = `🆕 تسک جدید توسط ${me.name}:\n«${title}»${due_date ? '\nموعد: ' + due_date : ''}`;
-    if (chatTarget) await tgSend(env, chatTarget, notifyText);
-    else await notifyAllAdmins(env, notifyText, me.id);
+    if (chatTarget) await tgSendInline(env, chatTarget, notifyText, replyMarkup);
+    else await notifyAllAdminsInline(env, notifyText, replyMarkup, me.id);
 
     return json({ id: taskId });
   }

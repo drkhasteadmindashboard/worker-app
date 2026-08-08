@@ -6,6 +6,7 @@
 <title>دکتر خسته | داشبورد</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jetbrains-mono@1.0.6/css/jetbrains-mono.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 :root{
   --bg:#0b0f19;
@@ -477,6 +478,26 @@ button{font-family:inherit;}
       <div class="view-header"><div><h2>نمای کلی</h2><p>وضعیت کلی پروژه دکتر خسته</p></div></div>
       <div class="pulse-line"><svg viewBox="0 0 300 34" preserveAspectRatio="none"><path d="M0,17 L40,17 L52,4 L64,30 L76,17 L300,17 L340,17 L352,4 L364,30 L376,17 L600,17"/></svg></div>
       <div class="stat-grid" id="stat-grid" style="margin-top:16px;"></div>
+
+      <!-- نمودارهای گرافیکی گزارش‌گیری -->
+      <div class="settings-card" style="margin-bottom: 22px;">
+        <h3 style="font-size: 15px; margin-bottom: 15px;">📊 نمودارها و تحلیل عملکرد</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+          <div style="background: var(--surface-2); padding: 16px; border-radius: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; align-items: center;">
+            <span style="font-size: 13px; color: var(--text-dim); margin-bottom: 12px;">توزیع تسک‌ها بر اساس وضعیت</span>
+            <div style="position: relative; width: 220px; height: 220px;">
+              <canvas id="statusChart"></canvas>
+            </div>
+          </div>
+          <div style="background: var(--surface-2); padding: 16px; border-radius: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; align-items: center;">
+            <span style="font-size: 13px; color: var(--text-dim); margin-bottom: 12px;">تعداد تسک‌ها بر اساس اولویت</span>
+            <div style="position: relative; width: 100%; height: 220px;">
+              <canvas id="priorityChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="view-header"><h2 style="font-size:16px;">تسک‌های نزدیک</h2></div>
       <div class="task-list" id="overview-tasks"></div>
     </section>
@@ -681,6 +702,9 @@ let currentPersianYear = 1403;
 let currentPersianMonth = 1; // 1-indexed (فروردین)
 let calSelected = null;
 
+let statusChartInstance = null;
+let priorityChartInstance = null;
+
 const $ = (id) => document.getElementById(id);
 
 function toggleSidebar() {
@@ -841,6 +865,80 @@ function renderOverview(){
   const upcoming = TASKS.filter(t=>t.status!=='done').slice(0,6);
   $('overview-tasks').innerHTML = upcoming.length ? upcoming.map(taskCardHtml).join('') : emptyHtml('همه تسک‌ها انجام شده! 🎉');
   bindTaskCardEvents('overview-tasks');
+
+  // رندر کردن نمودارهای آماری Chart.js
+  renderOverviewCharts();
+}
+
+function renderOverviewCharts() {
+  const pendingCount = TASKS.filter(t => t.status === 'pending').length;
+  const inProgressCount = TASKS.filter(t => t.status === 'in_progress').length;
+  const doneCount = TASKS.filter(t => t.status === 'done').length;
+
+  const urgentCount = TASKS.filter(t => t.priority === 'urgent').length;
+  const highCount = TASKS.filter(t => t.priority === 'high').length;
+  const normalCount = TASKS.filter(t => t.priority === 'normal').length;
+  const lowCount = TASKS.filter(t => t.priority === 'low').length;
+
+  // Status Chart (Doughnut)
+  if (statusChartInstance) statusChartInstance.destroy();
+  const ctx1 = $('statusChart').getContext('2d');
+  statusChartInstance = new Chart(ctx1, {
+    type: 'doughnut',
+    data: {
+      labels: ['در انتظار', 'در حال انجام', 'انجام‌شده'],
+      datasets: [{
+        data: [pendingCount, inProgressCount, doneCount],
+        backgroundColor: ['#f2a154', '#4fd1c5', '#57d38c'],
+        borderWidth: 1,
+        borderColor: '#131a2a'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: { color: '#e9edf7', font: { family: 'Vazirmatn', size: 11 } }
+        }
+      }
+    }
+  });
+
+  // Priority Chart (Bar)
+  if (priorityChartInstance) priorityChartInstance.destroy();
+  const ctx2 = $('priorityChart').getContext('2d');
+  priorityChartInstance = new Chart(ctx2, {
+    type: 'bar',
+    data: {
+      labels: ['فوری', 'بالا', 'عادی', 'کم'],
+      datasets: [{
+        label: 'تعداد تسک‌ها',
+        data: [urgentCount, highCount, normalCount, lowCount],
+        backgroundColor: ['#ef6a6a', '#f2a154', '#4fd1c5', '#8b93ac'],
+        borderWidth: 0,
+        borderRadius: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false }
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { color: '#e9edf7', font: { family: 'Vazirmatn' } }
+        },
+        y: {
+          grid: { color: '#232d47' },
+          ticks: { color: '#e9edf7', font: { family: 'Vazirmatn' }, precision: 0 }
+        }
+      }
+    }
+  });
 }
 
 /* ---------------- تسک‌ها ---------------- */
@@ -1277,16 +1375,19 @@ function renderAdmins(){
       <div style="font-weight:700;font-size:14px;">${escapeHtml(a.name)}</div>
       <div style="color:var(--text-dim);font-size:12px;">@${escapeHtml(a.username)}</div>
       ${a.is_super?'<div class="super-tag">ادمین اصلی</div>':''}
-      ${a.telegram_linked?'<div style="margin-top:8px;font-size:11px;color:var(--success);">🔗 تلگرام وصل است</div>':''}
+      ${a.telegram_chat_id ? `<div style="margin-top:8px;font-size:11px;color:var(--success);">🔗 تلگرام: ${a.telegram_chat_id}</div>` : '<div style="margin-top:8px;font-size:11px;color:var(--text-dim);">⚠️ تلگرام وصل نیست</div>'}
+      ${(ME.is_super) ? `<button class="btn btn-ghost btn-sm" style="margin-top:12px; margin-left:4px;" onclick="openEditAdminModal(${a.id})">ویرایش</button>` : ''}
       ${(ME.is_super && a.id!==ME.id) ? '<button class="btn btn-danger btn-sm" style="margin-top:12px;" onclick="deleteAdmin('+a.id+')">حذف</button>' : ''}
     </div>
   `).join('');
 }
+
 async function deleteAdmin(id){
   if(!confirm('این ادمین حذف شود؟')) return;
   try{ await api('/admins/'+id, {method:'DELETE'}); await loadAdmins(); renderAdmins(); toast('حذف شد'); }
   catch(e){ toast(e.message, true); }
 }
+
 function openAdminModal(){
   openModal(`
     <h3>ادمین جدید</h3>
@@ -1294,16 +1395,57 @@ function openAdminModal(){
     <div class="field"><label>نام کاربری</label><input id="a-username"></div>
     <div class="field"><label>رمز عبور</label><input id="a-password" type="password"></div>
     <div class="field"><label>رنگ اختصاصی</label><input id="a-color" type="color" value="#4fd1c5"></div>
+    <div class="field"><label>آیدی عددی تلگرام (اختیاری)</label><input id="a-tg-id" placeholder="مثلا 123456789"></div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeModal()">انصراف</button>
       <button class="btn btn-primary" id="a-save">ساخت ادمین</button>
     </div>
   `);
   $('a-save').addEventListener('click', async ()=>{
-    const body = { name:$('a-name').value.trim(), username:$('a-username').value.trim(), password:$('a-password').value, color:$('a-color').value };
+    const body = {
+      name:$('a-name').value.trim(),
+      username:$('a-username').value.trim(),
+      password:$('a-password').value,
+      color:$('a-color').value,
+      telegram_chat_id: $('a-tg-id').value.trim() || null
+    };
     if(!body.name||!body.username||!body.password){ toast('همه فیلدها الزامی است', true); return; }
     try{ await api('/admins', {method:'POST', body}); closeModal(); await loadAdmins(); renderAdmins(); toast('ادمین ساخته شد ✅'); }
     catch(e){ toast(e.message, true); }
+  });
+}
+
+function openEditAdminModal(adminId) {
+  const a = ADMINS.find(x => x.id === adminId);
+  if (!a) return;
+  openModal(`
+    <h3>ویرایش ادمین: ${escapeHtml(a.name)}</h3>
+    <div class="field"><label>نام نمایشی</label><input id="ea-name" value="${escapeAttr(a.name)}"></div>
+    <div class="field"><label>رنگ اختصاصی</label><input id="ea-color" type="color" value="${a.color}"></div>
+    <div class="field"><label>رمز عبور جدید (اختیاری)</label><input id="ea-password" type="password" placeholder="خالی بگذارید یعنی بدون تغییر"></div>
+    <div class="field"><label>آیدی عددی تلگرام</label><input id="ea-tg-id" value="${a.telegram_chat_id || ''}" placeholder="مثلا 123456789"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">انصراف</button>
+      <button class="btn btn-primary" id="ea-save">ذخیره تغییرات</button>
+    </div>
+  `);
+  $('ea-save').addEventListener('click', async () => {
+    const body = {
+      name: $('ea-name').value.trim(),
+      color: $('ea-color').value,
+      telegram_chat_id: $('ea-tg-id').value.trim() || null
+    };
+    const pass = $('ea-password').value;
+    if (pass) body.password = pass;
+    try {
+      await api('/admins/' + adminId, { method: 'PUT', body });
+      closeModal();
+      await loadAdmins();
+      renderAdmins();
+      toast('تغییرات ادمین ذخیره شد ✅');
+    } catch (e) {
+      toast(e.message, true);
+    }
   });
 }
 
