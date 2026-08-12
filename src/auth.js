@@ -91,6 +91,7 @@ export function publicAdmin(admin) {
     color: admin.color,
     is_super: !!admin.is_super,
     telegram_linked: !!admin.telegram_chat_id,
+    telegram_chat_id: admin.telegram_chat_id || null, // برگشت مستقیم آیدی عددی تلگرام برای سهولت کاربری
     created_at: admin.created_at,
   };
 }

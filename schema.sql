@@ -43,11 +43,26 @@ CREATE TABLE IF NOT EXISTS notes (
   title TEXT NOT NULL,
   content TEXT,
   color TEXT NOT NULL DEFAULT '#4fd1c5',
+  folder TEXT NOT NULL DEFAULT 'عمومی',      -- پوشه‌بندی ابسیدین
   created_by INTEGER NOT NULL,
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at TEXT NOT NULL DEFAULT (datetime('now')),
   FOREIGN KEY (created_by) REFERENCES admins(id)
 );
 
+CREATE TABLE IF NOT EXISTS settings (
+  key TEXT PRIMARY KEY,
+  value TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS messages (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  admin_id INTEGER NOT NULL,
+  content TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  FOREIGN KEY (admin_id) REFERENCES admins(id) ON DELETE CASCADE
+);
+
 CREATE INDEX IF NOT EXISTS idx_tasks_due ON tasks(due_date);
 CREATE INDEX IF NOT EXISTS idx_notes_created_by ON notes(created_by);
+CREATE INDEX IF NOT EXISTS idx_messages_created_at ON messages(created_at);

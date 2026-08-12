@@ -7,7 +7,9 @@
     "deploy": "wrangler deploy",
     "db:init": "wrangler d1 execute doctor_khaste_db --remote --file=./schema.sql",
     "db:init:local": "wrangler d1 execute doctor_khaste_db --local --file=./schema.sql",
-    "tail": "wrangler tail"
+    "tail": "wrangler tail",
+    "preview": "npm run db:init:local && npm run dev",
+    "setup-deploy": "node setup-deploy.js"
   },
   "devDependencies": {
     "wrangler": "^4.120.0"

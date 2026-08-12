@@ -10,8 +10,9 @@ import {
   getSessionAdmin,
   publicAdmin,
 } from './auth.js';
-import { tgSend, notifyAllAdmins, handleTelegramWebhook } from './telegram.js';
+import { tgSend, tgSendInline, notifyAllAdmins, notifyAllAdminsInline, handleTelegramWebhook, gregorianToShamsi } from './telegram.js';
 import { backupDatabaseToGithub, uploadFileToGithub } from './github.js';
+import { getSetting, setSetting } from './config.js';
 
 function json(data, status = 200, extraHeaders = {}) {
   return new Response(JSON.stringify(data), {
@@ -49,7 +50,8 @@ export default {
 
     try {
       // --- وبهوک تلگرام (بدون نیاز به احراز هویت داشبورد، محافظت‌شده با راز در مسیر) ---
-      if (pathname === `/telegram/webhook/${env.TELEGRAM_WEBHOOK_SECRET}` && request.method === 'POST') {
+      const webhookSecret = await getSetting(env, 'TELEGRAM_WEBHOOK_SECRET');
+      if (webhookSecret && pathname === `/telegram/webhook/${webhookSecret}` && request.method === 'POST') {
         return await handleTelegramWebhook(request, env);
       }
 
@@ -66,7 +68,8 @@ export default {
   },
 
   async scheduled(event, env, ctx) {
-    if (event.cron === '0 2 * * *') {
+    const backupCron = '0 2 * * *';
+    if (event.cron === backupCron) {
       ctx.waitUntil(backupDatabaseToGithub(env).catch((e) => console.error('backup failed', e)));
       return;
     }
@@ -161,24 +164,106 @@ async function handleApi(request, env, url) {
   }
   if (!me) return err('وارد نشده‌اید.', 401);
 
+  // --- مدیریت داینامیک تنظیمات از داخل خود اپ (فقط برای ادمین اصلی) ---
+  const settingsKeys = [
+    'TELEGRAM_BOT_TOKEN',
+    'TELEGRAM_WEBHOOK_SECRET',
+    'TELEGRAM_BOT_USERNAME',
+    'GITHUB_TOKEN',
+    'GITHUB_REPO',
+    'GITHUB_BRANCH',
+    'GITHUB_BACKUP_DIR',
+    'GITHUB_FILES_DIR'
+  ];
+
+  if (path === '/settings' && method === 'GET') {
+    if (!me.is_super) return err('فقط ادمین اصلی به تنظیمات پیشرفته سیستم دسترسی دارد.', 403);
+    const settings = {};
+    for (const key of settingsKeys) {
+      settings[key] = await getSetting(env, key);
+    }
+    return json({ settings });
+  }
+
+  if (path === '/settings' && method === 'POST') {
+    if (!me.is_super) return err('فقط ادمین اصلی به تنظیمات پیشرفته سیستم دسترسی دارد.', 403);
+    const body = await readJson(request);
+    for (const key of settingsKeys) {
+      if (body[key] !== undefined) {
+        await setSetting(env, key, body[key].trim());
+      }
+    }
+    return json({ ok: true });
+  }
+
+  // --- میز کار و گفتگوی تیمی (بدون قابلیت حذف و ویرایش) ---
+  if (path === '/messages' && method === 'GET') {
+    try {
+      const { results } = await env.DB.prepare(
+        `SELECT messages.*, admins.name as sender_name, admins.color as sender_color
+         FROM messages
+         JOIN admins ON admins.id = messages.admin_id
+         ORDER BY messages.created_at ASC LIMIT 100`
+      ).all();
+      return json({ messages: results });
+    } catch (e) {
+      // خودبهبودی جدول در دیتابیس قدیمی
+      await env.DB.prepare(
+        `CREATE TABLE IF NOT EXISTS messages (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          admin_id INTEGER NOT NULL,
+          content TEXT NOT NULL,
+          created_at TEXT NOT NULL DEFAULT (datetime('now')),
+          FOREIGN KEY (admin_id) REFERENCES admins(id) ON DELETE CASCADE
+        )`
+      ).run().catch(()=>{});
+      return json({ messages: [] });
+    }
+  }
+
+  if (path === '/messages' && method === 'POST') {
+    const { content } = await readJson(request);
+    if (!content || !content.trim()) return err('متن پیام نمی‌تواند خالی باشد.');
+    try {
+      await env.DB.prepare('INSERT INTO messages (admin_id, content) VALUES (?, ?)')
+        .bind(me.id, content.trim())
+        .run();
+      return json({ ok: true });
+    } catch (e) {
+      await env.DB.prepare(
+        `CREATE TABLE IF NOT EXISTS messages (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          admin_id INTEGER NOT NULL,
+          content TEXT NOT NULL,
+          created_at TEXT NOT NULL DEFAULT (datetime('now')),
+          FOREIGN KEY (admin_id) REFERENCES admins(id) ON DELETE CASCADE
+        )`
+      ).run().catch(()=>{});
+      await env.DB.prepare('INSERT INTO messages (admin_id, content) VALUES (?, ?)')
+        .bind(me.id, content.trim())
+        .run();
+      return json({ ok: true });
+    }
+  }
+
   // --- ادمین‌ها ---
   if (path === '/admins' && method === 'GET') {
-    const { results } = await env.DB.prepare('SELECT * FROM admins ORDER BY created_at ASC').all();
+    const { results } = await env.DB.prepare('SELECT id, username, name, color, is_super, telegram_chat_id, created_at FROM admins ORDER BY created_at ASC').all();
     return json({ admins: results.map(publicAdmin) });
   }
 
   if (path === '/admins' && method === 'POST') {
     if (!me.is_super) return err('فقط ادمین اصلی می‌تواند ادمین بسازد.', 403);
-    const { username, password, name, color } = await readJson(request);
+    const { username, password, name, color, telegram_chat_id } = await readJson(request);
     if (!username || !password || !name) return err('نام کاربری، رمز عبور و نام الزامی است.');
     const exists = await env.DB.prepare('SELECT id FROM admins WHERE username = ?').bind(username).first();
     if (exists) return err('این نام کاربری قبلاً استفاده شده است.');
     const salt = randomHex(16);
     const hash = await hashPassword(password, salt);
     const result = await env.DB.prepare(
-      'INSERT INTO admins (username, password_hash, salt, name, color, is_super) VALUES (?,?,?,?,?,0)'
+      'INSERT INTO admins (username, password_hash, salt, name, color, telegram_chat_id, is_super) VALUES (?,?,?,?,?,?,0)'
     )
-      .bind(username, hash, salt, name, color || '#4fd1c5')
+      .bind(username, hash, salt, name, color || '#4fd1c5', telegram_chat_id || null)
       .run();
     const admin = await env.DB.prepare('SELECT * FROM admins WHERE id = ?').bind(result.meta.last_row_id).first();
     return json({ admin: publicAdmin(admin) });
@@ -188,7 +273,7 @@ async function handleApi(request, env, url) {
   if (adminIdMatch && method === 'PUT') {
     const targetId = Number(adminIdMatch[1]);
     if (targetId !== me.id && !me.is_super) return err('اجازه ندارید.', 403);
-    const { name, color, password } = await readJson(request);
+    const { name, color, password, telegram_chat_id } = await readJson(request);
     const fields = [];
     const binds = [];
     if (name) {
@@ -204,6 +289,10 @@ async function handleApi(request, env, url) {
       const hash = await hashPassword(password, salt);
       fields.push('salt = ?', 'password_hash = ?');
       binds.push(salt, hash);
+    }
+    if (telegram_chat_id !== undefined) {
+      fields.push('telegram_chat_id = ?');
+      binds.push(telegram_chat_id ? telegram_chat_id.trim() : null);
     }
     if (!fields.length) return err('چیزی برای تغییر ارسال نشده.');
     binds.push(targetId);
@@ -244,14 +333,35 @@ async function handleApi(request, env, url) {
       .run();
     const taskId = result.meta.last_row_id;
 
+    // ارسال نوتیفیکیشن دکمه‌های شیشه‌ای تعاملی به تلگرام
+    const notifyText = `🆕 <b>تسک جدید توسط ${me.name}:</b>\n«${title}»${due_date ? '\nموعد: ' + gregorianToShamsi(due_date) : ''}`;
+    const replyMarkup = {
+      inline_keyboard: [
+        [
+          { text: '✅ تکمیل تسک', callback_data: `complete:${taskId}` },
+          { text: '🔄 در حال انجام', callback_data: `inprogress:${taskId}` }
+        ],
+        [
+          { text: '🙋‍♂️ واگذاری به من', callback_data: `assign:${taskId}` }
+        ]
+      ]
+    };
+
     let chatTarget = null;
     if (assigned_to) {
       const a = await env.DB.prepare('SELECT telegram_chat_id FROM admins WHERE id = ?').bind(assigned_to).first();
       chatTarget = a && a.telegram_chat_id;
     }
-    const notifyText = `🆕 تسک جدید توسط ${me.name}:\n«${title}»${due_date ? '\nموعد: ' + due_date : ''}`;
-    if (chatTarget) await tgSend(env, chatTarget, notifyText);
-    else await notifyAllAdmins(env, notifyText, me.id);
+    if (chatTarget) await tgSendInline(env, chatTarget, notifyText, replyMarkup);
+    else await notifyAllAdminsInline(env, notifyText, replyMarkup, me.id);
+
+    // ثبت خودکار فعالیت در پیام‌های وب‌اپلیکیشن
+    const shamsiDate = due_date ? gregorianToShamsi(due_date) : 'بدون موعد';
+    const priorityLabel = { urgent: 'فوری', high: 'بالا', normal: 'عادی', low: 'کم' }[priority] || 'عادی';
+    const activityContent = `🆕 <b>تسک جدید ایجاد شد:</b>\n«${title}»\n📅 موعد: ${shamsiDate} | ⚡ اولویت: ${priorityLabel}`;
+    await env.DB.prepare('INSERT INTO messages (admin_id, content) VALUES (?, ?)')
+      .bind(me.id, activityContent)
+      .run().catch(()=>{});
 
     return json({ id: taskId });
   }
@@ -260,6 +370,10 @@ async function handleApi(request, env, url) {
   if (taskIdMatch && method === 'PUT') {
     const id = Number(taskIdMatch[1]);
     const { title, description, due_date, status, priority, assigned_to } = await readJson(request);
+
+    // واکشی اطلاعات قبلی تسک جهت ثبت تغییر وضعیت
+    const oldTask = await env.DB.prepare('SELECT * FROM tasks WHERE id = ?').bind(id).first();
+
     const fields = [];
     const binds = [];
     if (title !== undefined) { fields.push('title = ?'); binds.push(title); }
@@ -276,6 +390,15 @@ async function handleApi(request, env, url) {
     binds.push(id);
     await env.DB.prepare(`UPDATE tasks SET ${fields.join(', ')} WHERE id = ?`).bind(...binds).run();
 
+    // ثبت خودکار تغییر وضعیت در پیام‌های وب‌اپلیکیشن
+    if (status !== undefined && oldTask && status !== oldTask.status) {
+      const statusLabel = { pending: 'در انتظار', in_progress: 'در حال انجام', done: 'انجام‌شده' }[status] || status;
+      const activityContent = `🔄 وضعیت تسک «${oldTask.title}» توسط ${me.name} به <b>[${statusLabel}]</b> تغییر یافت.`;
+      await env.DB.prepare('INSERT INTO messages (admin_id, content) VALUES (?, ?)')
+        .bind(me.id, activityContent)
+        .run().catch(()=>{});
+    }
+
     if (status === 'done') {
       const t = await env.DB.prepare('SELECT title FROM tasks WHERE id = ?').bind(id).first();
       await notifyAllAdmins(env, `✅ تسک «${t.title}» توسط ${me.name} تکمیل شد.`, me.id);
@@ -288,8 +411,13 @@ async function handleApi(request, env, url) {
     return json({ ok: true });
   }
 
-  // --- یادداشت‌ها ---
+  // --- یادداشت‌ها (ابسیدین استایل با پوشه‌بندی و مارک‌دان) ---
   if (path === '/notes' && method === 'GET') {
+    // خودبهبودی جدول برای اضافه کردن ستون folder در دیتابیس قدیمی به صورت تضمینی و بی قید و شرط
+    try {
+      await env.DB.prepare("ALTER TABLE notes ADD COLUMN folder TEXT NOT NULL DEFAULT 'عمومی'").run();
+    } catch (err) {}
+
     const { results } = await env.DB.prepare(
       `SELECT notes.*, admins.name as creator_name, admins.color as creator_color
        FROM notes LEFT JOIN admins ON admins.id = notes.created_by
@@ -299,12 +427,12 @@ async function handleApi(request, env, url) {
   }
 
   if (path === '/notes' && method === 'POST') {
-    const { title, content, color } = await readJson(request);
+    const { title, content, color, folder } = await readJson(request);
     if (!title) return err('عنوان یادداشت الزامی است.');
     const result = await env.DB.prepare(
-      'INSERT INTO notes (title, content, color, created_by) VALUES (?,?,?,?)'
+      'INSERT INTO notes (title, content, color, folder, created_by) VALUES (?,?,?,?,?)'
     )
-      .bind(title, content || '', color || me.color, me.id)
+      .bind(title, content || '', color || me.color, folder || 'عمومی', me.id)
       .run();
     return json({ id: result.meta.last_row_id });
   }
@@ -312,12 +440,13 @@ async function handleApi(request, env, url) {
   const noteIdMatch = path.match(/^\/notes\/(\d+)$/);
   if (noteIdMatch && method === 'PUT') {
     const id = Number(noteIdMatch[1]);
-    const { title, content, color } = await readJson(request);
+    const { title, content, color, folder } = await readJson(request);
     const fields = [];
     const binds = [];
     if (title !== undefined) { fields.push('title = ?'); binds.push(title); }
     if (content !== undefined) { fields.push('content = ?'); binds.push(content); }
     if (color !== undefined) { fields.push('color = ?'); binds.push(color); }
+    if (folder !== undefined) { fields.push('folder = ?'); binds.push(folder); }
     fields.push("updated_at = datetime('now')");
     binds.push(id);
     await env.DB.prepare(`UPDATE notes SET ${fields.join(', ')} WHERE id = ?`).bind(...binds).run();
@@ -326,18 +455,6 @@ async function handleApi(request, env, url) {
 
   if (noteIdMatch && method === 'DELETE') {
     await env.DB.prepare('DELETE FROM notes WHERE id = ?').bind(Number(noteIdMatch[1])).run();
-    return json({ ok: true });
-  }
-
-  // --- اتصال تلگرام ---
-  if (path === '/telegram/link-code' && method === 'POST') {
-    const code = randomHex(6);
-    await env.DB.prepare('UPDATE admins SET telegram_link_code = ? WHERE id = ?').bind(code, me.id).run();
-    return json({ code, botUsername: env.TELEGRAM_BOT_USERNAME || null });
-  }
-
-  if (path === '/telegram/unlink' && method === 'POST') {
-    await env.DB.prepare('UPDATE admins SET telegram_chat_id = NULL WHERE id = ?').bind(me.id).run();
     return json({ ok: true });
   }
 
