@@ -10,7 +10,7 @@ import {
   getSessionAdmin,
   publicAdmin,
 } from './auth.js';
-import { tgSend, tgSendInline, notifyAllAdmins, notifyAllAdminsInline, handleTelegramWebhook } from './telegram.js';
+import { tgSend, tgSendInline, notifyAllAdmins, notifyAllAdminsInline, handleTelegramWebhook, gregorianToShamsi } from './telegram.js';
 import { backupDatabaseToGithub, uploadFileToGithub } from './github.js';
 import { getSetting, setSetting } from './config.js';
 
@@ -334,7 +334,7 @@ async function handleApi(request, env, url) {
     const taskId = result.meta.last_row_id;
 
     // ارسال نوتیفیکیشن دکمه‌های شیشه‌ای تعاملی به تلگرام
-    const notifyText = `🆕 <b>تسک جدید توسط ${me.name}:</b>\n«${title}»${due_date ? '\nموعد: ' + due_date : ''}`;
+    const notifyText = `🆕 <b>تسک جدید توسط ${me.name}:</b>\n«${title}»${due_date ? '\nموعد: ' + gregorianToShamsi(due_date) : ''}`;
     const replyMarkup = {
       inline_keyboard: [
         [
@@ -355,6 +355,14 @@ async function handleApi(request, env, url) {
     if (chatTarget) await tgSendInline(env, chatTarget, notifyText, replyMarkup);
     else await notifyAllAdminsInline(env, notifyText, replyMarkup, me.id);
 
+    // ثبت خودکار فعالیت در پیام‌های وب‌اپلیکیشن
+    const shamsiDate = due_date ? gregorianToShamsi(due_date) : 'بدون موعد';
+    const priorityLabel = { urgent: 'فوری', high: 'بالا', normal: 'عادی', low: 'کم' }[priority] || 'عادی';
+    const activityContent = `🆕 <b>تسک جدید ایجاد شد:</b>\n«${title}»\n📅 موعد: ${shamsiDate} | ⚡ اولویت: ${priorityLabel}`;
+    await env.DB.prepare('INSERT INTO messages (admin_id, content) VALUES (?, ?)')
+      .bind(me.id, activityContent)
+      .run().catch(()=>{});
+
     return json({ id: taskId });
   }
 
@@ -362,6 +370,10 @@ async function handleApi(request, env, url) {
   if (taskIdMatch && method === 'PUT') {
     const id = Number(taskIdMatch[1]);
     const { title, description, due_date, status, priority, assigned_to } = await readJson(request);
+
+    // واکشی اطلاعات قبلی تسک جهت ثبت تغییر وضعیت
+    const oldTask = await env.DB.prepare('SELECT * FROM tasks WHERE id = ?').bind(id).first();
+
     const fields = [];
     const binds = [];
     if (title !== undefined) { fields.push('title = ?'); binds.push(title); }
@@ -377,6 +389,15 @@ async function handleApi(request, env, url) {
     if (!fields.length) return err('چیزی برای تغییر ارسال نشده.');
     binds.push(id);
     await env.DB.prepare(`UPDATE tasks SET ${fields.join(', ')} WHERE id = ?`).bind(...binds).run();
+
+    // ثبت خودکار تغییر وضعیت در پیام‌های وب‌اپلیکیشن
+    if (status !== undefined && oldTask && status !== oldTask.status) {
+      const statusLabel = { pending: 'در انتظار', in_progress: 'در حال انجام', done: 'انجام‌شده' }[status] || status;
+      const activityContent = `🔄 وضعیت تسک «${oldTask.title}» توسط ${me.name} به <b>[${statusLabel}]</b> تغییر یافت.`;
+      await env.DB.prepare('INSERT INTO messages (admin_id, content) VALUES (?, ?)')
+        .bind(me.id, activityContent)
+        .run().catch(()=>{});
+    }
 
     if (status === 'done') {
       const t = await env.DB.prepare('SELECT title FROM tasks WHERE id = ?').bind(id).first();

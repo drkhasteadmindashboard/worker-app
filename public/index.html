@@ -1366,6 +1366,22 @@ function shamsiToGregorian(jy, jm, jd) {
   return null;
 }
 
+// فرمت دقیق تاریخ خورشیدی به همراه ساعت برای پیام‌های میزکار
+function formatMessageDateTime(createdAtStr) {
+  if (!createdAtStr) return '';
+  try {
+    const cleanStr = createdAtStr.replace(' ', 'T') + (createdAtStr.includes('Z') ? '' : 'Z');
+    const d = new Date(cleanStr);
+    const sh = getShamsiDetails(d);
+    const pad = (n) => String(n).padStart(2, '0');
+    const hours = pad(d.getHours());
+    const minutes = pad(d.getMinutes());
+    return `${sh.year}/${sh.month}/${sh.day} ساعت ${hours}:${minutes}`;
+  } catch (e) {
+    return createdAtStr;
+  }
+}
+
 // تولید روزهای یک ماه شمسی خاص
 function getPersianMonthDays(year, month) {
   let approxGregYear = year + 621;
@@ -1520,7 +1536,7 @@ async function loadChatMessages() {
     container.innerHTML = messages.length ? messages.map(m => {
       const isMe = m.admin_id === ME.id;
       const bubbleClass = 'chat-bubble' + (isMe ? ' me' : '');
-      const timeStr = m.created_at.slice(11, 16); // Extract HH:MM
+      const timeStr = formatMessageDateTime(m.created_at); // نمایش تاریخ خورشیدی به همراه ساعت دقیق
 
       return `
         <div class="${bubbleClass}" style="--bubble-color: ${m.sender_color}">
@@ -1799,7 +1815,7 @@ function openEditAdminModal(adminId) {
       closeModal();
       await loadAdmins();
       renderAdmins();
-      toast('تغییرات ادمین ذخیره شد ✅');
+      toast('تخییرات ادمین ذخیره شد ✅');
     } catch (e) {
       toast(e.message, true);
     }

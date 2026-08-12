@@ -1,5 +1,24 @@
-// ادغام تلگرام: ارسال پیام و پردازش وبهوک ربات با اتصال مستقیم و سریع آیدی عددی
+// ادغام تلگرام: ارسال پیام و پردازش وبهوک ربات همراه با دکمه‌های شیشه‌ای تعاملی، منوی دکمه‌ای پایینی (Reply Keyboard) و تاریخ‌های شمسی
 import { getSetting } from './config.js';
+
+// تبدیل تاریخ میلادی به شمسی در سمت بک‌اند برای پیام‌های تلگرام
+export function gregorianToShamsi(gDateStr) {
+  if (!gDateStr) return '';
+  try {
+    const parts = gDateStr.split('-');
+    const date = new Date(Date.UTC(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10)));
+    const formatter = new Intl.DateTimeFormat('en-US-u-ca-persian', {
+      year: 'numeric', month: 'numeric', day: 'numeric', timeZone: 'UTC'
+    });
+    const fParts = formatter.formatToParts(date);
+    const year = fParts.find(p => p.type === 'year').value;
+    const month = fParts.find(p => p.type === 'month').value;
+    const day = fParts.find(p => p.type === 'day').value;
+    return `${year}/${month}/${day}`;
+  } catch (e) {
+    return gDateStr;
+  }
+}
 
 export async function tgSend(env, chatId, text) {
   const botToken = await getSetting(env, 'TELEGRAM_BOT_TOKEN');
@@ -12,6 +31,20 @@ export async function tgSend(env, chatId, text) {
     });
   } catch (e) {
     console.error('telegram send error', e);
+  }
+}
+
+export async function tgSendWithKeyboard(env, chatId, text, replyMarkup) {
+  const botToken = await getSetting(env, 'TELEGRAM_BOT_TOKEN');
+  if (!chatId || !botToken) return;
+  try {
+    await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML', reply_markup: replyMarkup }),
+    });
+  } catch (e) {
+    console.error('telegram send with keyboard error', e);
   }
 }
 
@@ -85,6 +118,16 @@ export async function handleTelegramWebhook(request, env) {
     return new Response('bad request', { status: 400 });
   }
 
+  // منوی دکمه‌ای پایین تلگرام
+  const replyKeyboard = {
+    keyboard: [
+      [{ text: '📋 تسک‌های باز' }],
+      [{ text: '🗒️ یادداشت جدید' }, { text: '💬 پیام جدید' }]
+    ],
+    resize_keyboard: true,
+    persistent: true
+  };
+
   // --- هندل کردن دکمه‌های شیشه‌ای (Callback Queries) ---
   const cb = update.callback_query;
   if (cb) {
@@ -141,28 +184,50 @@ export async function handleTelegramWebhook(request, env) {
 
   if (admin) {
     if (text.startsWith('/start') || text === '/help' || text === '/راهنما') {
-      await tgSend(
+      await tgSendWithKeyboard(
         env,
         chatId,
-        `👋 سلام <b>${admin.name}</b> عزیز!\n\nحساب تلگرام شما با موفقیت متصل است و پیام‌های ربات دکتر خسته را دریافت می‌کنید.\n\n📋 دستورات:\n/tasks — نمایش لیست تسک‌های باز`
+        `👋 سلام <b>${admin.name}</b> عزیز!\n\nحساب تلگرام شما متصل است و دکمه‌های پایینی منوی سریع برای شما فعال شدند.\n\n📋 دستورات:\n/tasks — نمایش لیست تسک‌های باز`,
+        replyKeyboard
       );
       return new Response('ok');
     }
 
-    if (text === '/tasks' || text === '/تسکها' || text === '/تسک‌ها') {
+    if (text === '/tasks' || text === '/تسکها' || text === '/تسک‌ها' || text === '📋 تسک‌های باز') {
       const { results } = await env.DB.prepare(
         "SELECT * FROM tasks WHERE status != 'done' ORDER BY (due_date IS NULL), due_date ASC LIMIT 15"
       ).all();
       if (!results.length) {
-        await tgSend(env, chatId, '🎉 هیچ تسک بازی وجود ندارد!');
+        await tgSendWithKeyboard(env, chatId, '🎉 هیچ تسک بازی وجود ندارد!', replyKeyboard);
         return new Response('ok');
       }
       const icons = { urgent: '🔴', high: '🟠', normal: '🟡', low: '⚪️' };
       let out = '📋 <b>تسک‌های باز:</b>\n\n';
       for (const t of results) {
-        out += `${icons[t.priority] || '⚪️'} ${t.title}${t.due_date ? '  —  موعد: ' + t.due_date : ''}\n`;
+        const shamsiDate = t.due_date ? gregorianToShamsi(t.due_date) : '';
+        out += `${icons[t.priority] || '⚪️'} ${t.title}${shamsiDate ? '  —  موعد: ' + shamsiDate : ''}\n`;
       }
-      await tgSend(env, chatId, out);
+      await tgSendWithKeyboard(env, chatId, out, replyKeyboard);
+      return new Response('ok');
+    }
+
+    if (text === '🗒️ یادداشت جدید') {
+      await tgSendWithKeyboard(
+        env,
+        chatId,
+        '🗒️ <b>یادداشت‌های تیمی (ابسیدین استایل):</b>\n\nبرای نوشتن یادداشت جدید یا بارگذاری تصاویر روی گیت‌هاب، لطفاً وارد بخش «یادداشت‌ها» در داشبورد وب شوید.',
+        replyKeyboard
+      );
+      return new Response('ok');
+    }
+
+    if (text === '💬 پیام جدید') {
+      await tgSendWithKeyboard(
+        env,
+        chatId,
+        '💬 <b>پیام تیمی در میز کار:</b>\n\nبرای گفتگوی لحظه‌ای و ثبت توافقات غیرقابل‌حذف با همکار خود، به تب «میز کار و گفتگو» در وب اپ مراجعه کنید.',
+        replyKeyboard
+      );
       return new Response('ok');
     }
   } else {
