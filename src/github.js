@@ -5,16 +5,21 @@ export function toBase64Unicode(str) {
   return btoa(unescape(encodeURIComponent(str)));
 }
 
+// انکد امن مسیرها برای سازگاری کامل با کاراکترهای فارسی و فولدربندی ابسیدین در گیت‌هاب
+function encodePath(path) {
+  return path.split('/').map(segment => encodeURIComponent(segment)).join('/');
+}
+
 async function ghFetch(env, path, opts = {}) {
   const branch = await getSetting(env, 'GITHUB_BRANCH', 'main');
   const repo = await getSetting(env, 'GITHUB_REPO');
   const token = await getSetting(env, 'GITHUB_TOKEN');
 
-  const url = `https://api.github.com/repos/${repo}/contents/${path}`;
+  const url = `https://api.github.com/repos/${repo}/contents/${encodePath(path)}`;
   return fetch(url, {
     ...opts,
     headers: {
-      Authorization: `Bearer ${token}`,
+      Authorization: `token ${token}`, // استفاده از پیشوند استاندارد token برای سازگاری حداکثری با انواع توکن‌ها
       'User-Agent': 'doctor-khaste-worker',
       Accept: 'application/vnd.github+json',
       ...(opts.headers || {}),
@@ -24,7 +29,7 @@ async function ghFetch(env, path, opts = {}) {
 
 async function getFileSha(env, path) {
   const branch = await getSetting(env, 'GITHUB_BRANCH', 'main');
-  const res = await ghFetch(env, `${encodeURI(path)}?ref=${branch}`);
+  const res = await ghFetch(env, `${path}?ref=${branch}`);
   if (res.status === 200) {
     const j = await res.json();
     return j.sha;
@@ -48,7 +53,7 @@ export async function putFile(env, path, contentBase64, message) {
     branch: branch,
   };
   if (sha) body.sha = sha;
-  const res = await ghFetch(env, encodeURI(path), { method: 'PUT', body: JSON.stringify(body) });
+  const res = await ghFetch(env, path, { method: 'PUT', body: JSON.stringify(body) });
   if (!res.ok) {
     const errText = await res.text();
     throw new Error(`خطای گیت‌هاب (${res.status}): ${errText}`);

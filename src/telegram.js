@@ -1,4 +1,4 @@
-// ادغام تلگرام: ارسال پیام و پردازش وبهوک ربات همراه با دکمه‌های شیشه‌ای تعاملی و اتصال مستقیم با آیدی عددی
+// ادغام تلگرام: ارسال پیام و پردازش وبهوک ربات با اتصال مستقیم و سریع آیدی عددی
 import { getSetting } from './config.js';
 
 export async function tgSend(env, chatId, text) {
@@ -98,7 +98,7 @@ export async function handleTelegramWebhook(request, env) {
       .first();
 
     if (!admin) {
-      await answerCallbackQuery(env, callbackQueryId, `❌ حساب تلگرام شما متصل نیست. آیدی عددی شما: ${fromId}`);
+      await answerCallbackQuery(env, callbackQueryId, `❌ حساب تلگرام شما هنوز در داشبورد ست نشده است. آیدی شما: ${fromId}`);
       return new Response('ok');
     }
 
@@ -140,11 +140,11 @@ export async function handleTelegramWebhook(request, env) {
     .first();
 
   if (admin) {
-    if (text.startsWith('/start')) {
+    if (text.startsWith('/start') || text === '/help' || text === '/راهنما') {
       await tgSend(
         env,
         chatId,
-        `👋 سلام <b>${admin.name}</b> عزیز!\n\nحساب شما با موفقیت شناسایی شد و به سیستم «دکتر خسته» متصل است.\n\nاز این پس پیام‌ها و دکمه‌های تعاملی تغییرات تسک‌ها را مستقیماً همین‌جا دریافت خواهید کرد!\n\n📋 دستورات:\n/tasks — نمایش لیست تسک‌های باز`
+        `👋 سلام <b>${admin.name}</b> عزیز!\n\nحساب تلگرام شما با موفقیت متصل است و پیام‌های ربات دکتر خسته را دریافت می‌کنید.\n\n📋 دستورات:\n/tasks — نمایش لیست تسک‌های باز`
       );
       return new Response('ok');
     }
@@ -163,11 +163,6 @@ export async function handleTelegramWebhook(request, env) {
         out += `${icons[t.priority] || '⚪️'} ${t.title}${t.due_date ? '  —  موعد: ' + t.due_date : ''}\n`;
       }
       await tgSend(env, chatId, out);
-      return new Response('ok');
-    }
-
-    if (text === '/help' || text === '/راهنما') {
-      await tgSend(env, chatId, 'دستورات ربات دکتر خسته:\n/tasks — نمایش تسک‌های باز\n/help — نمایش راهنمای ربات');
       return new Response('ok');
     }
   } else {

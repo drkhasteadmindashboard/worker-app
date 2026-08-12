@@ -437,19 +437,6 @@ async function handleApi(request, env, url) {
     return json({ ok: true });
   }
 
-  // --- اتصال تلگرام ---
-  if (path === '/telegram/link-code' && method === 'POST') {
-    const code = randomHex(6);
-    await env.DB.prepare('UPDATE admins SET telegram_link_code = ? WHERE id = ?').bind(code, me.id).run();
-    const botUsername = await getSetting(env, 'TELEGRAM_BOT_USERNAME');
-    return json({ code, botUsername: botUsername || null });
-  }
-
-  if (path === '/telegram/unlink' && method === 'POST') {
-    await env.DB.prepare('UPDATE admins SET telegram_chat_id = NULL WHERE id = ?').bind(me.id).run();
-    return json({ ok: true });
-  }
-
   // --- بکاپ دستی به گیت‌هاب ---
   if (path === '/backup' && method === 'POST') {
     try {

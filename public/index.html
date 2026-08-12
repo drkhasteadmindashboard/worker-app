@@ -9,46 +9,47 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <style>
-:root{
-  --bg:#0b0f19;
-  --surface:#131a2a;
-  --surface-2:#1a2338;
-  --border:#232d47;
-  --text:#e9edf7;
-  --text-dim:#8b93ac;
-  --accent:#f2a154;
-  --accent-dim:#7a5530;
-  --accent2:#4fd1c5;
-  --danger:#ef6a6a;
-  --success:#57d38c;
-  --radius:16px;
-  --mono:'JetBrains Mono',monospace;
+:root {
+  --bg: #070a13;
+  --surface: #0e1320;
+  --surface-2: #151c2e;
+  --border: #1f2942;
+  --text: #f1f5f9;
+  --text-dim: #94a3b8;
+  --accent: #f59e0b;
+  --accent-dim: #b45309;
+  --accent2: #10b981;
+  --danger: #f43f5e;
+  --success: #10b981;
+  --radius: 14px;
+  --mono: 'JetBrains Mono', monospace;
+  --shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.7);
 }
 :root.light-mode {
-  --bg:#f4f6fa;
-  --surface:#ffffff;
-  --surface-2:#f0f2f6;
-  --border:#e2e8f0;
-  --text:#1a202c;
-  --text-dim:#4a5568;
-  --accent:#dd6b20;
-  --accent-dim:#fbd38d;
-  --accent2:#319795;
-  --danger:#e53e3e;
-  --success:#38a169;
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --surface-2: #f1f5f9;
+  --border: #e2e8f0;
+  --text: #0f172a;
+  --text-dim: #64748b;
+  --accent: #d97706;
+  --accent-dim: #fef3c7;
+  --accent2: #0d9488;
+  --danger: #e11d48;
+  --success: #0d9488;
+  --shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.1);
 }
-*{box-sizing:border-box;}
+*{box-sizing:border-box; transition: background 0.2s, border-color 0.2s;}
 html,body{margin:0;padding:0;}
 body{
   background:
-    radial-gradient(1200px 600px at 100% -10%, rgba(242,161,84,.08), transparent),
-    radial-gradient(1000px 500px at -10% 110%, rgba(79,209,197,.08), transparent),
+    radial-gradient(1200px 600px at 100% -10%, rgba(242,161,84,.04), transparent),
+    radial-gradient(1000px 500px at -10% 110%, rgba(79,209,197,.04), transparent),
     var(--bg);
   color:var(--text);
   font-family:'Vazirmatn',sans-serif;
   min-height:100vh;
   overflow-x:hidden;
-  transition: background 0.3s, color 0.3s;
 }
 ::selection{background:var(--accent);color:#1a1206;}
 a{color:inherit;}
@@ -66,12 +67,12 @@ button{font-family:inherit;}
 .auth-card{
   width:100%;max-width:400px;background:var(--surface);
   border:1px solid var(--border);border-radius:var(--radius);
-  padding:32px;box-shadow:0 20px 60px rgba(0,0,0,.4);
+  padding:32px;box-shadow:var(--shadow);
 }
 .brand{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
 .brand-dot{width:12px;height:12px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px var(--accent);animation:blink 2s ease-in-out infinite;}
 @keyframes blink{0%,100%{opacity:1;}50%{opacity:.35;}}
-.brand h1{font-size:20px;margin:0;font-weight:700;letter-spacing:-.02em;}
+.brand h1{font-size:21px;margin:0;font-weight:800;letter-spacing:-.02em;}
 .brand-sub{color:var(--text-dim);font-size:13px;margin:0 0 20px;}
 .field{margin-bottom:14px;}
 .field label{display:block;font-size:13px;color:var(--text-dim);margin-bottom:6px;}
@@ -80,7 +81,7 @@ button{font-family:inherit;}
   background:var(--surface-2);color:var(--text);font-family:inherit;font-size:14px;outline:none;
   transition:border-color .15s, background 0.15s;
 }
-.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent);}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent); background:var(--surface);}
 .field input[type=color]{padding:4px;height:42px;cursor:pointer;}
 .btn{
   display:inline-flex;align-items:center;justify-content:center;gap:8px;
@@ -91,7 +92,7 @@ button{font-family:inherit;}
 .btn-primary{background:linear-gradient(135deg,var(--accent),#e08840);color:#1a1206;}
 .btn-primary:hover{filter:brightness(1.08);}
 .btn-ghost{background:var(--surface-2);color:var(--text);border:1px solid var(--border);}
-.btn-ghost:hover{border-color:var(--accent2);}
+.btn-ghost:hover{border-color:var(--accent2); background:var(--surface);}
 .btn-danger{background:rgba(239,106,106,.12);color:var(--danger);border:1px solid rgba(239,106,106,.3);}
 .btn-block{width:100%;}
 .btn-sm{padding:6px 12px;font-size:12.5px;border-radius:8px;}
@@ -160,7 +161,7 @@ button{font-family:inherit;}
   color:var(--text-dim);cursor:pointer;font-size:14px;margin-bottom:2px;transition:.15s;
 }
 .nav-item:hover{background:var(--surface-2);color:var(--text);}
-.nav-item.active{background:var(--surface-2);color:var(--accent);}
+.nav-item.active{background:var(--surface-2);color:var(--accent); font-weight:700;}
 .nav-spacer{flex:1;}
 .user-badge{
   display:flex;align-items:center;gap:10px;padding:10px;border-radius:12px;background:var(--surface-2);
@@ -177,13 +178,14 @@ button{font-family:inherit;}
 .view.active{display:block;}
 @keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
 .view-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:12px;}
-.view-header h2{margin:0;font-size:21px;font-weight:700;}
-.view-header p{margin:2px 0 0;color:var(--text-dim);font-size:13px;}
+.view-header h2{margin:0;font-size:22px;font-weight:800; letter-spacing: -0.02em;}
+.view-header p{margin:2px 0 0;color:var(--text-dim);font-size:13.5px;}
 
 /* ---------- کارت‌های آمار ---------- */
 .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;}
-.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;}
-.stat-card .num{font-family:var(--mono);font-size:26px;font-weight:700;}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow); transition: transform 0.2s;}
+.stat-card:hover { transform: translateY(-2px); }
+.stat-card .num{font-family:var(--mono);font-size:26px;font-weight:800;}
 .stat-card .label{color:var(--text-dim);font-size:12.5px;margin-top:4px;}
 .stat-card.accent .num{color:var(--accent);}
 .stat-card.teal .num{color:var(--accent2);}
@@ -196,16 +198,17 @@ button{font-family:inherit;}
 .task-list{display:flex;flex-direction:column;gap:10px;}
 .task-card{
   background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 16px;
-  display:flex;align-items:center;gap:14px;
+  display:flex;align-items:center;gap:14px; box-shadow: var(--shadow); transition: transform 0.2s;
 }
+.task-card:hover { transform: translateY(-2px); }
 .task-check{width:22px;height:22px;border-radius:7px;border:2px solid var(--border);flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s;}
 .task-check.done{background:var(--success);border-color:var(--success);}
 .task-check.done::after{content:'✓';color:#0b0f19;font-size:13px;font-weight:900;}
 .task-body{flex:1;min-width:0;}
 .task-title{font-size:14.5px;font-weight:600;}
-.task-title.done{text-decoration:line-through;color:var(--text-dim);}
+.task-title.done{text-decoration:line-through;color:var(--text-dim);opacity: 0.6;}
 .task-meta{display:flex;gap:10px;margin-top:5px;font-size:11.5px;color:var(--text-dim);flex-wrap:wrap;align-items:center;}
-.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:999px;font-size:11px;font-family:var(--mono);}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:999px;font-size:11px;font-family:var(--mono); font-weight: 700;}
 .pr-urgent{background:rgba(239,106,106,.14);color:var(--danger);}
 .pr-high{background:rgba(242,161,84,.14);color:var(--accent);}
 .pr-normal{background:rgba(79,209,197,.14);color:var(--accent2);}
@@ -219,18 +222,18 @@ button{font-family:inherit;}
 
 /* ---------- تقویم ---------- */
 .cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
-.cal-head h3{margin:0;font-size:16px;}
+.cal-head h3{margin:0;font-size:16px; font-weight: 700;}
 .cal-nav{display:flex;gap:6px;}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;}
 .cal-dow{text-align:center;font-size:11.5px;color:var(--text-dim);padding-bottom:6px;}
 .cal-day{
   aspect-ratio:1/0.85;border-radius:10px;border:1px solid var(--border);background:var(--surface);
   padding:6px;font-size:12px;font-family:var(--mono);cursor:pointer;position:relative;
-  display:flex;flex-direction:column;gap:3px;
+  display:flex;flex-direction:column;gap:3px; box-shadow: var(--shadow);
 }
 .cal-day.other-month{opacity:.28;}
 .cal-day.today{border-color:var(--accent2);box-shadow:0 0 0 1px var(--accent2) inset;}
-.cal-day.selected{border-color:var(--accent);}
+.cal-day.selected{border-color:var(--accent); background: var(--surface-2);}
 .cal-dots{display:flex;gap:3px;flex-wrap:wrap;margin-top:auto;}
 .cal-dots .dot{width:6px;height:6px;}
 .cal-day-tasks{margin-top:18px;}
@@ -245,6 +248,7 @@ button{font-family:inherit;}
   border-radius: var(--radius);
   height: calc(100vh - 160px);
   overflow: hidden;
+  box-shadow: var(--shadow);
 }
 .obsidian-folders {
   border-left: 1px solid var(--border);
@@ -313,6 +317,7 @@ button{font-family:inherit;}
 .obsidian-card h4 {
   margin: 0 0 6px 0;
   font-size: 14px;
+  font-weight: 700;
 }
 .obsidian-card p {
   margin: 0;
@@ -381,13 +386,15 @@ button{font-family:inherit;}
 }
 
 /* ---------- ادمین‌ها ---------- */
-.admin-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;text-align:center;}
+.admin-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;}
+.admin-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;text-align:center;box-shadow:var(--shadow); transition: transform 0.2s;}
+.admin-card:hover { transform: translateY(-2px); }
 .admin-card .avatar{width:52px;height:52px;font-size:18px;margin:0 auto 10px;}
-.super-tag{display:inline-block;margin-top:6px;font-size:10.5px;background:rgba(242,161,84,.14);color:var(--accent);padding:2px 9px;border-radius:999px;}
+.super-tag{display:inline-block;margin-top:6px;font-size:10.5px;background:rgba(242,161,84,.14);color:var(--accent);padding:2px 9px;border-radius:999px; font-weight: 700;}
 
 /* ---------- تنظیمات ---------- */
-.settings-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px;max-width:100%;margin-bottom:16px;}
-.settings-card h3{margin:0 0 4px;font-size:15px;display:flex;align-items:center;gap:8px;}
+.settings-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px;max-width:100%;margin-bottom:16px;box-shadow:var(--shadow);}
+.settings-card h3{margin:0 0 4px;font-size:15px;display:flex;align-items:center;gap:8px; font-weight: 700;}
 .settings-card p{color:var(--text-dim);font-size:13px;margin:0 0 14px;line-height:1.8;}
 .code-box{font-family:var(--mono);background:var(--surface-2);border:1px dashed var(--border);border-radius:10px;padding:14px;text-align:center;font-size:20px;letter-spacing:3px;color:var(--accent2);margin-bottom:14px;}
 .status-line{display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:14px;}
@@ -404,6 +411,7 @@ button{font-family:inherit;}
   display:flex;
   flex-direction:column;
   overflow:hidden;
+  box-shadow: var(--shadow);
 }
 .chat-messages{
   flex:1;
@@ -421,6 +429,7 @@ button{font-family:inherit;}
   position:relative;
   border-right:3px solid var(--bubble-color, var(--accent));
   align-self:flex-start;
+  box-shadow: var(--shadow);
 }
 .chat-bubble.me{
   align-self:flex-end;
@@ -458,6 +467,7 @@ button{font-family:inherit;}
 }
 .chat-input-bar input:focus{
   border-color:var(--accent);
+  background: var(--surface);
 }
 
 /* ---------- مودال ---------- */
@@ -465,8 +475,8 @@ button{font-family:inherit;}
   position:fixed;inset:0;background:rgba(5,7,14,.6);backdrop-filter:blur(3px);
   display:flex;align-items:center;justify-content:center;z-index:100;padding:20px;
 }
-.modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:26px;width:100%;max-width:440px;max-height:88vh;overflow-y:auto;}
-.modal h3{margin:0 0 18px;font-size:17px;}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:26px;width:100%;max-width:440px;max-height:88vh;overflow-y:auto;box-shadow: var(--shadow);}
+.modal h3{margin:0 0 18px;font-size:17px; font-weight: 700;}
 .modal-actions{display:flex;gap:10px;margin-top:18px;}
 .modal-actions .btn{flex:1;}
 .row-2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
@@ -611,7 +621,7 @@ button{font-family:inherit;}
       </div>
       <div class="nav-item" data-view="notes">
         <svg class="svg-icon" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        <span>یادداشت‌ها (پوشه‌ای)</span>
+        <span>یادداشت‌ها</span>
       </div>
       <div class="nav-item" data-view="admins" id="nav-admins">
         <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -725,7 +735,7 @@ button{font-family:inherit;}
 
     <!-- میز کار و گفتگو -->
     <section class="view" id="view-chat">
-      <div class="view-header"><div><h2>میز کار و گفتگو</h2><p>مکالمه و توافقات تیمی بدون قابلیت ویرایش یا حذف پیام‌ها</p></div></div>
+      <div class="view-header"><div><h2>میز کار و گفتگو</h2><p>محیط گفتگو و اشتراک‌گذاری ایده‌ها</p></div></div>
       <div class="chat-container">
         <div class="chat-messages" id="chat-messages"></div>
         <div class="chat-input-bar">
@@ -807,13 +817,13 @@ button{font-family:inherit;}
       <div class="settings-card">
         <h3>
           <svg class="svg-icon" viewBox="0 0 24 24"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          اتصال تلگرام
+          وضعیت اتصال تلگرام شما
         </h3>
-        <p id="tg-status-text">وضعیت اتصال...</p>
-        <div class="status-line"><span class="status-dot" id="tg-dot"></span><span id="tg-dot-label"></span></div>
-        <div id="tg-code-box" class="code-box hidden"></div>
-        <button class="btn btn-ghost" onclick="genTelegramCode()">دریافت کد اتصال جدید</button>
-        <button class="btn btn-danger" onclick="unlinkTelegram()" style="margin-right:8px;">قطع اتصال</button>
+        <p>ربات تلگرام به صورت خودکار تغییرات را با متصل شدن مستقیم به آیدی عددی تلگرام شما ارسال می‌کند.</p>
+        <div class="status-line">
+          <span class="status-dot" id="tg-dot"></span>
+          <span id="tg-dot-label">در حال بررسی...</span>
+        </div>
       </div>
 
       <div class="settings-card">
@@ -1122,7 +1132,7 @@ function renderOverviewCharts() {
         data: [pendingCount, inProgressCount, doneCount],
         backgroundColor: ['#f2a154', '#4fd1c5', '#57d38c'],
         borderWidth: 1,
-        borderColor: '#131a2a'
+        borderColor: 'var(--surface-2)'
       }]
     },
     options: {
@@ -1646,12 +1656,12 @@ function createNewNoteObsidian() {
 }
 
 async function saveActiveNoteObsidian() {
-  const title = $("note-title-input").value.trim();
-  const content = $("note-textarea").value;
-  const folder = $("note-folder-select").value;
+  const title = $('note-title-input').value.trim();
+  const content = $('note-textarea').value;
+  const folder = $('note-folder-select').value;
 
   if (!title) {
-    toast("عنوان یادداشت الزامی است.", true);
+    toast('عنوان یادداشت الزامی است.', true);
     return;
   }
 
@@ -1660,12 +1670,12 @@ async function saveActiveNoteObsidian() {
   try {
     let noteId = activeNote ? activeNote.id : null;
     if (activeNote) {
-      await api("/notes/" + activeNote.id, { method: "PUT", body });
-      toast("یادداشت بروزرسانی شد ✅");
+      await api('/notes/' + activeNote.id, { method: 'PUT', body });
+      toast('یادداشت بروزرسانی شد ✅');
     } else {
-      const res = await api("/notes", { method: "POST", body });
+      const res = await api('/notes', { method: 'POST', body });
       noteId = res.id;
-      toast("یادداشت جدید ذخیره شد ✅");
+      toast('یادداشت جدید ذخیره شد ✅');
     }
     await loadNotes();
     if (noteId) {
@@ -1798,25 +1808,11 @@ function openEditAdminModal(adminId) {
 
 /* ---------------- تنظیمات: تلگرام / بکاپ / پروفایل / سیستم پیشرفته ---------------- */
 async function loadTelegramStatus(){
-  const on = ME.telegram_linked;
+  const on = !!ME.telegram_chat_id;
   $('tg-dot').className = 'status-dot ' + (on?'on':'off');
-  $('tg-dot-label').textContent = on ? 'متصل است' : 'متصل نیست';
-  $('tg-status-text').textContent = on
-    ? 'یادآوری موعد تسک‌ها برای شما در تلگرام ارسال می‌شود.'
-    : 'برای دریافت یادآوری تسک‌ها در تلگرام، ربات را استارت کرده و کد اتصال را بفرستید.';
+  $('tg-dot-label').innerHTML = on ? `متصل به آیدی عددی تلگرام شما: <code>${ME.telegram_chat_id}</code>` : 'آیدی تلگرام شما هنوز تنظیم نشده است. از منوی ادمین‌ها آیدی خود را وارد کنید.';
 }
-async function genTelegramCode(){
-  try{
-    const r = await api('/telegram/link-code', {method:'POST'});
-    $('tg-code-box').classList.remove('hidden');
-    $('tg-code-box').innerHTML = '/start ' + r.code;
-    toast('این دستور را برای ربات تلگرام ارسال کنید');
-  }catch(e){ toast(e.message, true); }
-}
-async function unlinkTelegram(){
-  await api('/telegram/unlink', {method:'POST'});
-  ME.telegram_linked = false; loadTelegramStatus(); toast('اتصال تلگرام قطع شد');
-}
+
 async function manualBackup(){
   try{ api('/backup', {method:'POST'}); toast('بکاپ با موفقیت در گیت‌هاب ذخیره شد ✅'); }
   catch(e){ toast('خطا در بکاپ: '+e.message, true); }
