@@ -3,136 +3,78 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>دکتر خسته | داشبورد</title>
+<title>دکتر خسته | داشبورد خلاقانه تیمی</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jetbrains-mono@1.0.6/css/jetbrains-mono.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <style>
 :root {
-  --bg: #070a13;
-  --surface: #0e1320;
-  --surface-2: #151c2e;
-  --border: #1f2942;
-  --text: #f1f5f9;
-  --text-dim: #94a3b8;
+  --bg: #030712;
+  --surface: rgba(17, 24, 39, 0.7);
+  --surface-2: rgba(31, 41, 55, 0.65);
+  --border: rgba(255, 255, 255, 0.08);
+  --border-glow: rgba(59, 130, 246, 0.25);
+  --text: #f3f4f6;
+  --text-dim: #9ca3af;
   --accent: #f59e0b;
-  --accent-dim: #b45309;
+  --accent-glow: rgba(245, 158, 11, 0.35);
   --accent2: #10b981;
-  --danger: #f43f5e;
+  --accent2-glow: rgba(16, 185, 129, 0.35);
+  --danger: #ef4444;
   --success: #10b981;
-  --radius: 14px;
+  --radius: 20px;
   --mono: 'JetBrains Mono', monospace;
-  --shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.7);
+  --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  --glass: backdrop-filter: blur(12px) saturate(180%); -webkit-backdrop-filter: blur(12px) saturate(180%);
 }
 :root.light-mode {
-  --bg: #f8fafc;
-  --surface: #ffffff;
-  --surface-2: #f1f5f9;
-  --border: #e2e8f0;
-  --text: #0f172a;
-  --text-dim: #64748b;
+  --bg: #f3f4f6;
+  --surface: rgba(255, 255, 255, 0.75);
+  --surface-2: rgba(243, 244, 246, 0.8);
+  --border: rgba(0, 0, 0, 0.06);
+  --border-glow: rgba(59, 130, 246, 0.15);
+  --text: #111827;
+  --text-dim: #6b7280;
   --accent: #d97706;
-  --accent-dim: #fef3c7;
-  --accent2: #0d9488;
-  --danger: #e11d48;
-  --success: #0d9488;
-  --shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.1);
+  --accent-glow: rgba(217, 119, 6, 0.2);
+  --accent2: #059669;
+  --accent2-glow: rgba(5, 150, 105, 0.2);
+  --danger: #dc2626;
+  --success: #059669;
+  --shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
 }
-*{box-sizing:border-box; transition: background 0.2s, border-color 0.2s;}
+*{box-sizing:border-box; transition: background 0.3s, border-color 0.3s, box-shadow 0.3s;}
 html,body{margin:0;padding:0;}
 body{
-  background:
-    radial-gradient(1200px 600px at 100% -10%, rgba(242,161,84,.04), transparent),
-    radial-gradient(1000px 500px at -10% 110%, rgba(79,209,197,.04), transparent),
-    var(--bg);
+  background: var(--bg);
+  background-image:
+    radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.12) 0, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(245, 158, 11, 0.1) 0, transparent 50%),
+    radial-gradient(at 50% 100%, rgba(16, 185, 129, 0.08) 0, transparent 50%);
   color:var(--text);
   font-family:'Vazirmatn',sans-serif;
   min-height:100vh;
   overflow-x:hidden;
 }
-::selection{background:var(--accent);color:#1a1206;}
-a{color:inherit;}
+::selection{background:var(--accent);color:#111;}
+a{color:inherit; text-decoration: none;}
 button{font-family:inherit;}
 .hidden{display:none !important;}
 
 /* --- عنصر امضا: خط پالس/مانیتور --- */
-.pulse-line{width:100%;height:34px;overflow:hidden;opacity:.85;}
-.pulse-line svg{width:200%;height:100%;animation:pulse-move 6s linear infinite;}
+.pulse-line{width:100%;height:34px;overflow:hidden;opacity:.85; border-radius: 10px; margin-bottom: 20px;}
+.pulse-line svg{width:200%;height:100%;animation:pulse-move 8s linear infinite;}
 @keyframes pulse-move{from{transform:translateX(0);}to{transform:translateX(-50%);}}
-.pulse-line path{fill:none;stroke:var(--accent2);stroke-width:2;filter:drop-shadow(0 0 4px rgba(79,209,197,.6));}
-
-/* ---------- صفحات ورود / راه‌اندازی ---------- */
-.auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px;}
-.auth-card{
-  width:100%;max-width:400px;background:var(--surface);
-  border:1px solid var(--border);border-radius:var(--radius);
-  padding:32px;box-shadow:var(--shadow);
-}
-.brand{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
-.brand-dot{width:12px;height:12px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px var(--accent);animation:blink 2s ease-in-out infinite;}
-@keyframes blink{0%,100%{opacity:1;}50%{opacity:.35;}}
-.brand h1{font-size:21px;margin:0;font-weight:800;letter-spacing:-.02em;}
-.brand-sub{color:var(--text-dim);font-size:13px;margin:0 0 20px;}
-.field{margin-bottom:14px;}
-.field label{display:block;font-size:13px;color:var(--text-dim);margin-bottom:6px;}
-.field input,.field select,.field textarea{
-  width:100%;padding:11px 13px;border-radius:10px;border:1px solid var(--border);
-  background:var(--surface-2);color:var(--text);font-family:inherit;font-size:14px;outline:none;
-  transition:border-color .15s, background 0.15s;
-}
-.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent); background:var(--surface);}
-.field input[type=color]{padding:4px;height:42px;cursor:pointer;}
-.btn{
-  display:inline-flex;align-items:center;justify-content:center;gap:8px;
-  padding:11px 18px;border-radius:10px;border:none;cursor:pointer;font-size:14px;font-weight:600;
-  transition:transform .1s, filter .15s; font-family:inherit;
-}
-.btn:active{transform:scale(.97);}
-.btn-primary{background:linear-gradient(135deg,var(--accent),#e08840);color:#1a1206;}
-.btn-primary:hover{filter:brightness(1.08);}
-.btn-ghost{background:var(--surface-2);color:var(--text);border:1px solid var(--border);}
-.btn-ghost:hover{border-color:var(--accent2); background:var(--surface);}
-.btn-danger{background:rgba(239,106,106,.12);color:var(--danger);border:1px solid rgba(239,106,106,.3);}
-.btn-block{width:100%;}
-.btn-sm{padding:6px 12px;font-size:12.5px;border-radius:8px;}
-.auth-error{color:var(--danger);font-size:13px;margin-top:10px;min-height:16px;}
-
-/* ---------- آیکون‌های SVG کاستوم ---------- */
-.svg-icon {
-  width: 18px;
-  height: 18px;
-  stroke-width: 2;
-  stroke: currentColor;
-  fill: none;
-  display: inline-block;
-  vertical-align: middle;
-}
-.svg-icon-large {
-  width: 48px;
-  height: 48px;
-  stroke-width: 1.5;
-  stroke: var(--text-dim);
-  fill: none;
-  margin-bottom: 12px;
-}
-.svg-icon-inline {
-  width: 14px;
-  height: 14px;
-  stroke-width: 2;
-  stroke: currentColor;
-  fill: none;
-  display: inline-block;
-  vertical-align: middle;
-  margin-left: 4px;
-}
+.pulse-line path{fill:none;stroke:var(--accent2);stroke-width:2.5;filter:drop-shadow(0 0 6px var(--accent2-glow));}
 
 /* ---------- هدر موبایل ---------- */
 .mobile-header {
   display: none;
   background: var(--surface);
+  --glass;
   border-bottom: 1px solid var(--border);
-  padding: 12px 16px;
+  padding: 14px 20px;
   align-items: center;
   justify-content: space-between;
   position: sticky;
@@ -144,125 +86,343 @@ button{font-family:inherit;}
   border: none;
   color: var(--text);
   cursor: pointer;
-  padding: 4px;
+  padding: 6px;
 }
 
-/* ---------- چیدمان اصلی ---------- */
-.app-shell{display:flex;min-height:100vh;}
-.sidebar{
-  width:260px;flex-shrink:0;background:var(--surface);border-left:1px solid var(--border);
-  display:flex;flex-direction:column;padding:22px 16px;position:sticky;top:0;height:100vh;
-  transition: transform 0.3s ease, right 0.3s ease, background 0.3s;
-  z-index: 95;
+/* ---------- دکمه‌های اصلی و ورودی‌ها ---------- */
+.field{margin-bottom:18px;}
+.field label{display:block;font-size:13.5px;color:var(--text-dim);margin-bottom:8px;font-weight:600;}
+.field input,.field select,.field textarea{
+  width:100%;padding:12px 16px;border-radius:12px;border:1px solid var(--border);
+  background:var(--surface-2);color:var(--text);font-family:inherit;font-size:14px;outline:none;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
 }
-.sidebar .brand{padding:0 6px;margin-bottom:22px;}
+.field input:focus,.field select:focus,.field textarea:focus{
+  border-color:var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+.field input[type=color]{padding:6px;height:46px;cursor:pointer;}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:10px;
+  padding:12px 24px;border-radius:12px;border:none;cursor:pointer;font-size:14px;font-weight:700;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transform: translateY(0);
+  transition: transform 0.2s, box-shadow 0.2s, filter 0.2s;
+  font-family:inherit;
+}
+.btn:hover{
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+}
+.btn:active{transform:translateY(0);}
+.btn-primary{
+  background: linear-gradient(135deg, var(--accent), #e08840);
+  color:#111;
+}
+.btn-primary:hover{filter:brightness(1.12);}
+.btn-ghost {
+  background: var(--surface-2);
+  --glass;
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.btn-ghost:hover {
+  border-color: var(--accent2);
+  box-shadow: 0 0 10px var(--accent2-glow);
+}
+.btn-danger{
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--danger);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+.btn-danger:hover {
+  background: var(--danger);
+  color: #fff;
+}
+.btn-block{width:100%;}
+.btn-sm{padding:8px 16px;font-size:13px;border-radius:10px;}
+
+/* ---------- آیکون‌های SVG کاستوم ---------- */
+.svg-icon {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2.2;
+  stroke: currentColor;
+  fill: none;
+  display: inline-block;
+  vertical-align: middle;
+}
+.svg-icon-large {
+  width: 52px;
+  height: 52px;
+  stroke-width: 1.5;
+  stroke: var(--text-dim);
+  fill: none;
+  margin-bottom: 14px;
+}
+.svg-icon-inline {
+  width: 14px;
+  height: 14px;
+  stroke-width: 2.2;
+  stroke: currentColor;
+  fill: none;
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: 6px;
+}
+
+/* ---------- چیدمان اصلی با طراحی شیشه‌ای مدرن ---------- */
+.app-shell{
+  display:flex;
+  min-height:100vh;
+  padding: 16px;
+  gap: 16px;
+}
+.sidebar {
+  width: 280px;
+  flex-shrink: 0;
+  background: var(--surface);
+  --glass;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  padding: 24px 18px;
+  position: sticky;
+  top: 16px;
+  height: calc(100vh - 32px);
+  box-shadow: var(--shadow);
+}
+.sidebar .brand{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 24px;
+  padding: 0 8px;
+}
+.brand-dot{
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 14px var(--accent);
+  animation: blink 2.5s ease-in-out infinite;
+}
+@keyframes blink{0%,100%{opacity:1; transform: scale(1.0);} 50%{opacity:.4; transform: scale(0.9);}}
+.sidebar .brand h1{
+  font-size: 20px;
+  margin: 0;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+}
 .nav-item{
-  display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:10px;
-  color:var(--text-dim);cursor:pointer;font-size:14px;margin-bottom:2px;transition:.15s;
+  display:flex;align-items:center;gap:14px;padding:12px 14px;border-radius:12px;
+  color:var(--text-dim);cursor:pointer;font-size:14.5px;margin-bottom:4px;transition:0.2s ease;
 }
-.nav-item:hover{background:var(--surface-2);color:var(--text);}
-.nav-item.active{background:var(--surface-2);color:var(--accent); font-weight:700;}
+.nav-item:hover{
+  background:var(--surface-2);
+  color:var(--text);
+  transform: translateX(-4px);
+}
+.nav-item.active{
+  background: var(--surface-2);
+  color: var(--accent);
+  font-weight: 800;
+  border-right: 3px solid var(--accent);
+  box-shadow: inset -4px 0 10px var(--accent-glow);
+}
 .nav-spacer{flex:1;}
 .user-badge{
-  display:flex;align-items:center;gap:10px;padding:10px;border-radius:12px;background:var(--surface-2);
+  display:flex;align-items:center;gap:12px;padding:12px;border-radius:14px;
+  background:var(--surface-2);
   border:1px solid var(--border);
 }
-.avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#0b0f19;flex-shrink:0;}
-.user-badge .name{font-size:13px;font-weight:600;}
-.user-badge .role{font-size:11px;color:var(--text-dim);}
-.logout-btn{margin-right:auto;background:none;border:none;color:var(--text-dim);cursor:pointer;padding:6px;}
+.avatar{
+  width:38px;
+  height:38px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:800;
+  font-size:14px;
+  color:#111;
+  flex-shrink:0;
+  box-shadow: 0 0 10px rgba(0,0,0,0.15);
+}
+.user-badge .name{font-size:13.5px;font-weight:700;}
+.user-badge .role{font-size:11px;color:var(--text-dim);margin-top:2px;}
+.logout-btn{
+  margin-right:auto;
+  background:none;
+  border:none;
+  color:var(--text-dim);
+  cursor:pointer;
+  padding:6px;
+  transition: color 0.2s;
+}
 .logout-btn:hover{color:var(--danger);}
 
-.main{flex:1;padding:26px 32px;max-width:100%;overflow-x:hidden;}
-.view{display:none;animation:fadeIn .25s ease;}
+/* بخش نمایش اصلی */
+.main {
+  flex: 1;
+  background: var(--surface);
+  --glass;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 32px;
+  box-shadow: var(--shadow);
+  overflow-y: auto;
+  height: calc(100vh - 32px);
+  position: sticky;
+  top: 16px;
+}
+.view{display:none;animation:fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);}
 .view.active{display:block;}
-@keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
-.view-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:12px;}
-.view-header h2{margin:0;font-size:22px;font-weight:800; letter-spacing: -0.02em;}
-.view-header p{margin:2px 0 0;color:var(--text-dim);font-size:13.5px;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:none;}}
+.view-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:14px;}
+.view-header h2{margin:0;font-size:24px;font-weight:900; letter-spacing: -0.02em;}
+.view-header p{margin:4px 0 0;color:var(--text-dim);font-size:14px;}
 
-/* ---------- کارت‌های آمار ---------- */
-.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;}
-.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow); transition: transform 0.2s;}
-.stat-card:hover { transform: translateY(-2px); }
-.stat-card .num{font-family:var(--mono);font-size:26px;font-weight:800;}
-.stat-card .label{color:var(--text-dim);font-size:12.5px;margin-top:4px;}
-.stat-card.accent .num{color:var(--accent);}
-.stat-card.teal .num{color:var(--accent2);}
-.stat-card.danger .num{color:var(--danger);}
+/* ---------- کارت‌های آماری خلاقانه ---------- */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+.stat-card{
+  background:var(--surface-2);
+  --glass;
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:22px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  position: relative;
+  overflow: hidden;
+}
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; width: 4px; height: 100%;
+  background: var(--text-dim);
+}
+.stat-card.accent::before { background: var(--accent); }
+.stat-card.teal::before { background: var(--accent2); }
+.stat-card.danger::before { background: var(--danger); }
 
-/* ---------- تسک‌ها ---------- */
-.filter-bar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
-.chip{padding:6px 14px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--text-dim);font-size:12.5px;cursor:pointer;}
-.chip.active{border-color:var(--accent);color:var(--accent);background:rgba(242,161,84,.08);}
-.task-list{display:flex;flex-direction:column;gap:10px;}
+.stat-card .num{font-family:var(--mono);font-size:28px;font-weight:900;}
+.stat-card .label{color:var(--text-dim);font-size:13px;margin-top:6px;font-weight:600;}
+.stat-card.accent .num{color:var(--accent); text-shadow: 0 0 10px var(--accent-glow);}
+.stat-card.teal .num{color:var(--accent2); text-shadow: 0 0 10px var(--accent2-glow);}
+.stat-card.danger .num{color:var(--danger); text-shadow: 0 0 10px rgba(239, 68, 68, 0.25);}
+
+/* ---------- طراحی تسک‌ها ---------- */
+.filter-bar{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;}
+.chip{
+  padding:8px 18px;
+  border-radius:100px;
+  border:1px solid var(--border);
+  background:var(--surface-2);
+  color:var(--text-dim);
+  font-size:13px;
+  font-weight:700;
+  cursor:pointer;
+  transition: all 0.2s ease;
+}
+.chip.active{
+  border-color:var(--accent);
+  color:var(--accent);
+  background:var(--accent-glow);
+  box-shadow: 0 4px 12px var(--accent-glow);
+}
+.task-list{display:flex;flex-direction:column;gap:12px;}
 .task-card{
-  background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 16px;
-  display:flex;align-items:center;gap:14px; box-shadow: var(--shadow); transition: transform 0.2s;
+  background:var(--surface-2);
+  --glass;
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:16px 20px;
+  display:flex;
+  align-items:center;
+  gap:16px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
 }
-.task-card:hover { transform: translateY(-2px); }
-.task-check{width:22px;height:22px;border-radius:7px;border:2px solid var(--border);flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s;}
-.task-check.done{background:var(--success);border-color:var(--success);}
-.task-check.done::after{content:'✓';color:#0b0f19;font-size:13px;font-weight:900;}
+.task-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-glow);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+}
+.task-check{
+  width:24px;height:24px;border-radius:8px;border:2.5px solid var(--border);
+  flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;
+}
+.task-check.done{background:var(--success);border-color:var(--success); box-shadow: 0 0 10px var(--accent2-glow);}
+.task-check.done::after{content:'✓';color:#111;font-size:14px;font-weight:900;}
 .task-body{flex:1;min-width:0;}
-.task-title{font-size:14.5px;font-weight:600;}
-.task-title.done{text-decoration:line-through;color:var(--text-dim);opacity: 0.6;}
-.task-meta{display:flex;gap:10px;margin-top:5px;font-size:11.5px;color:var(--text-dim);flex-wrap:wrap;align-items:center;}
-.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:999px;font-size:11px;font-family:var(--mono); font-weight: 700;}
-.pr-urgent{background:rgba(239,106,106,.14);color:var(--danger);}
-.pr-high{background:rgba(242,161,84,.14);color:var(--accent);}
-.pr-normal{background:rgba(79,209,197,.14);color:var(--accent2);}
-.pr-low{background:rgba(139,147,172,.14);color:var(--text-dim);}
-.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
-.task-actions{display:flex;gap:6px;}
-.icon-btn{background:none;border:none;color:var(--text-dim);cursor:pointer;padding:6px;border-radius:8px;}
-.icon-btn:hover{background:var(--surface-2);color:var(--text);}
-.icon-btn.danger:hover{color:var(--danger);}
-.empty-state{text-align:center;padding:50px 20px;color:var(--text-dim);}
-
-/* ---------- تقویم ---------- */
-.cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
-.cal-head h3{margin:0;font-size:16px; font-weight: 700;}
-.cal-nav{display:flex;gap:6px;}
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;}
-.cal-dow{text-align:center;font-size:11.5px;color:var(--text-dim);padding-bottom:6px;}
-.cal-day{
-  aspect-ratio:1/0.85;border-radius:10px;border:1px solid var(--border);background:var(--surface);
-  padding:6px;font-size:12px;font-family:var(--mono);cursor:pointer;position:relative;
-  display:flex;flex-direction:column;gap:3px; box-shadow: var(--shadow);
+.task-title{font-size:15px;font-weight:700;}
+.task-title.done{text-decoration:line-through;color:var(--text-dim);opacity: 0.5;}
+.task-meta{display:flex;gap:12px;margin-top:6px;font-size:12px;color:var(--text-dim);flex-wrap:wrap;align-items:center;}
+.badge{
+  display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:100px;
+  font-size:11.5px;font-family:var(--mono); font-weight: 800;
 }
-.cal-day.other-month{opacity:.28;}
-.cal-day.today{border-color:var(--accent2);box-shadow:0 0 0 1px var(--accent2) inset;}
-.cal-day.selected{border-color:var(--accent); background: var(--surface-2);}
-.cal-dots{display:flex;gap:3px;flex-wrap:wrap;margin-top:auto;}
-.cal-dots .dot{width:6px;height:6px;}
-.cal-day-tasks{margin-top:18px;}
+.pr-urgent{background:rgba(239, 68, 68, 0.15);color:var(--danger);}
+.pr-high{background:rgba(245, 158, 11, 0.15);color:var(--accent);}
+.pr-normal{background:rgba(16, 185, 129, 0.15);color:var(--accent2);}
+.pr-low{background:var(--surface-2);color:var(--text-dim);}
+.dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.task-actions{display:flex;gap:8px;}
+.icon-btn{
+  background:none;border:none;color:var(--text-dim);cursor:pointer;padding:8px;border-radius:10px;
+}
+.icon-btn:hover{background:var(--surface-2);color:var(--text);}
+.icon-btn.danger:hover{color:var(--danger); background: rgba(239, 68, 68, 0.12);}
+.empty-state{text-align:center;padding:60px 20px;color:var(--text-dim);}
 
-/* ---------- یادداشت‌ها (ابسیدین استایل سه ستونه) ---------- */
+/* ---------- طراحی تقویم ---------- */
+.cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.cal-head h3{margin:0;font-size:18px; font-weight: 800;}
+.cal-nav{display:flex;gap:8px;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;}
+.cal-dow{text-align:center;font-size:12px;color:var(--text-dim);font-weight:700;padding-bottom:10px;}
+.cal-day{
+  aspect-ratio:1/0.85;border-radius:12px;border:1px solid var(--border);background:var(--surface-2);
+  padding:10px;font-size:13px;font-family:var(--mono);cursor:pointer;position:relative;
+  display:flex;flex-direction:column;gap:4px;
+}
+.cal-day:hover {
+  border-color: var(--accent);
+  box-shadow: 0 0 10px var(--accent-glow);
+}
+.cal-day.other-month{opacity:.22;}
+.cal-day.today{border-color:var(--accent2);box-shadow:0 0 0 2px var(--accent2) inset;}
+.cal-day.selected{border-color:var(--accent); background: var(--surface-2); box-shadow: 0 0 12px var(--accent-glow);}
+.cal-dots{display:flex;gap:4px;flex-wrap:wrap;margin-top:auto;}
+.cal-dots .dot{width:7px;height:7px;}
+.cal-day-tasks{margin-top:24px;}
+
+/* ---------- طراحی مدرن ابسیدین ---------- */
 .obsidian-layout {
   display: grid;
   grid-template-columns: 240px 280px 1fr;
   gap: 16px;
-  background: var(--surface);
+  background: var(--surface-2);
+  --glass;
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  height: calc(100vh - 160px);
+  height: calc(100vh - 200px);
   overflow: hidden;
   box-shadow: var(--shadow);
 }
 .obsidian-folders {
   border-left: 1px solid var(--border);
-  background: var(--bg);
-  padding: 16px;
+  background: rgba(3, 7, 18, 0.2);
+  padding: 18px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
   overflow-y: auto;
 }
 .folder-title {
-  font-size: 13px;
+  font-size: 13.5px;
   color: var(--text-dim);
-  font-weight: 700;
+  font-weight: 800;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -270,79 +430,79 @@ button{font-family:inherit;}
 .folder-list {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 .folder-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 10px;
-  border-radius: 8px;
+  padding: 10px 12px;
+  border-radius: 10px;
   cursor: pointer;
-  font-size: 13.5px;
+  font-size: 14px;
   color: var(--text-dim);
-  transition: 0.15s;
 }
 .folder-item:hover, .folder-item.active {
   background: var(--surface-2);
-  color: var(--text);
+  color: var(--accent);
+  font-weight: 700;
 }
 .folder-badge {
   background: var(--border);
   font-size: 11px;
-  padding: 2px 6px;
-  border-radius: 99px;
+  padding: 3px 8px;
+  border-radius: 100px;
   color: var(--text-dim);
 }
 .obsidian-notes-list {
   border-left: 1px solid var(--border);
-  background: var(--surface);
-  padding: 16px;
+  background: rgba(17, 24, 39, 0.3);
+  padding: 18px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
   overflow-y: auto;
 }
 .obsidian-card {
-  padding: 12px;
-  border-radius: 10px;
+  padding: 14px;
+  border-radius: 12px;
   background: var(--surface-2);
   border: 1px solid var(--border);
   cursor: pointer;
-  transition: 0.15s;
 }
 .obsidian-card:hover, .obsidian-card.active {
   border-color: var(--accent);
+  box-shadow: 0 4px 15px var(--accent-glow);
 }
 .obsidian-card h4 {
   margin: 0 0 6px 0;
-  font-size: 14px;
-  font-weight: 700;
+  font-size: 14.5px;
+  font-weight: 800;
 }
 .obsidian-card p {
   margin: 0;
-  font-size: 11.5px;
+  font-size: 12px;
   color: var(--text-dim);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .obsidian-editor {
-  background: var(--surface);
+  background: transparent;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   height: 100%;
 }
 .editor-toolbar {
-  padding: 12px 16px;
+  padding: 14px 20px;
   border-bottom: 1px solid var(--border);
-  background: var(--surface-2);
+  background: rgba(3, 7, 18, 0.4);
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 12px;
 }
 .editor-tabs {
   display: flex;
@@ -353,7 +513,7 @@ button{font-family:inherit;}
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  padding: 16px;
+  padding: 20px;
 }
 .markdown-editor {
   width: 100%;
@@ -364,50 +524,79 @@ button{font-family:inherit;}
   resize: none;
   color: var(--text);
   font-family: var(--mono);
-  font-size: 14.5px;
-  line-height: 1.7;
+  font-size: 15px;
+  line-height: 1.8;
 }
 .markdown-preview {
   flex: 1;
   overflow-y: auto;
-  font-size: 14px;
+  font-size: 14.5px;
   line-height: 1.8;
   color: var(--text);
   padding: 10px;
 }
 .markdown-preview h1, .markdown-preview h2, .markdown-preview h3 {
   border-bottom: 1px solid var(--border);
-  padding-bottom: 6px;
+  padding-bottom: 8px;
+  margin-top: 20px;
 }
 .markdown-preview img {
   max-width: 100%;
-  border-radius: 8px;
+  border-radius: 12px;
   border: 1px solid var(--border);
+  box-shadow: var(--shadow);
 }
 
 /* ---------- ادمین‌ها ---------- */
-.admin-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;}
-.admin-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;text-align:center;box-shadow:var(--shadow); transition: transform 0.2s;}
-.admin-card:hover { transform: translateY(-2px); }
-.admin-card .avatar{width:52px;height:52px;font-size:18px;margin:0 auto 10px;}
-.super-tag{display:inline-block;margin-top:6px;font-size:10.5px;background:rgba(242,161,84,.14);color:var(--accent);padding:2px 9px;border-radius:999px; font-weight: 700;}
+.admin-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;}
+.admin-card{
+  background:var(--surface-2);
+  --glass;
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:24px;
+  text-align:center;
+  box-shadow: var(--shadow);
+}
+.admin-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-glow);
+}
+.admin-card .avatar{width:56px;height:56px;font-size:20px;margin:0 auto 12px;}
+.super-tag{
+  display:inline-block;margin-top:8px;font-size:11px;
+  background:var(--accent-glow);color:var(--accent);
+  padding:3px 12px;border-radius:100px; font-weight: 800;
+}
 
 /* ---------- تنظیمات ---------- */
-.settings-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px;max-width:100%;margin-bottom:16px;box-shadow:var(--shadow);}
-.settings-card h3{margin:0 0 4px;font-size:15px;display:flex;align-items:center;gap:8px; font-weight: 700;}
-.settings-card p{color:var(--text-dim);font-size:13px;margin:0 0 14px;line-height:1.8;}
-.code-box{font-family:var(--mono);background:var(--surface-2);border:1px dashed var(--border);border-radius:10px;padding:14px;text-align:center;font-size:20px;letter-spacing:3px;color:var(--accent2);margin-bottom:14px;}
-.status-line{display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:14px;}
-.status-dot{width:9px;height:9px;border-radius:50%;}
-.status-dot.on{background:var(--success);box-shadow:0 0 8px var(--success);}
+.settings-card{
+  background:var(--surface-2);
+  --glass;
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:24px;max-width:100%;margin-bottom:18px;
+  box-shadow:var(--shadow);
+}
+.settings-card h3{margin:0 0 6px;font-size:16px;display:flex;align-items:center;gap:10px; font-weight: 800;}
+.settings-card p{color:var(--text-dim);font-size:13.5px;margin:0 0 16px;line-height:1.8;}
+.code-box{
+  font-family:var(--mono);background:var(--surface);border:1.5px dashed var(--border);
+  border-radius:12px;padding:16px;text-align:center;font-size:22px;letter-spacing:3px;
+  color:var(--accent2);margin-bottom:16px;
+}
+.status-line{display:flex;align-items:center;gap:10px;font-size:14px;margin-bottom:16px;}
+.status-dot{width:11px;height:11px;border-radius:50%;}
+.status-dot.on{background:var(--success);box-shadow:0 0 10px var(--success);}
 .status-dot.off{background:var(--text-dim);}
 
 /* ---------- میز کار و گفتگوی تیمی ---------- */
 .chat-container{
-  background:var(--surface);
+  background:var(--surface-2);
+  --glass;
   border:1px solid var(--border);
   border-radius:var(--radius);
-  height:60vh;
+  height:62vh;
   display:flex;
   flex-direction:column;
   overflow:hidden;
@@ -416,78 +605,87 @@ button{font-family:inherit;}
 .chat-messages{
   flex:1;
   overflow-y:auto;
-  padding:20px;
+  padding:24px;
   display:flex;
   flex-direction:column;
-  gap:12px;
+  gap:14px;
 }
 .chat-bubble{
   max-width:75%;
-  padding:10px 14px;
-  border-radius:14px;
-  background:var(--surface-2);
+  padding:12px 16px;
+  border-radius:16px;
+  background:var(--surface);
   position:relative;
-  border-right:3px solid var(--bubble-color, var(--accent));
+  border-right:4px solid var(--bubble-color, var(--accent));
   align-self:flex-start;
-  box-shadow: var(--shadow);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
 }
 .chat-bubble.me{
   align-self:flex-end;
   border-right:none;
-  border-left:3px solid var(--bubble-color, var(--accent));
+  border-left:4px solid var(--bubble-color, var(--accent));
 }
 .chat-meta-info{
-  font-size:11px;
+  font-size:11.5px;
   color:var(--text-dim);
-  margin-bottom:4px;
+  margin-bottom:6px;
   display:flex;
   align-items:center;
-  gap:6px;
+  gap:8px;
 }
 .chat-content-text{
-  font-size:13.5px;
-  line-height:1.6;
+  font-size:14px;
+  line-height:1.7;
   white-space:pre-wrap;
 }
 .chat-input-bar{
-  padding:14px;
+  padding:16px;
   border-top:1px solid var(--border);
-  background:var(--bg);
+  background:rgba(3, 7, 18, 0.3);
   display:flex;
-  gap:10px;
+  gap:12px;
 }
 .chat-input-bar input{
   flex:1;
-  background:var(--surface-2);
+  background:var(--surface);
   border:1px solid var(--border);
-  border-radius:10px;
-  padding:11px 14px;
+  border-radius:12px;
+  padding:12px 16px;
   color:var(--text);
   outline:none;
 }
 .chat-input-bar input:focus{
   border-color:var(--accent);
-  background: var(--surface);
+  box-shadow: 0 0 0 3px var(--accent-glow);
 }
 
 /* ---------- مودال ---------- */
 .modal-overlay{
-  position:fixed;inset:0;background:rgba(5,7,14,.6);backdrop-filter:blur(3px);
+  position:fixed;inset:0;background:rgba(3, 7, 18, 0.7);backdrop-filter:blur(8px);
   display:flex;align-items:center;justify-content:center;z-index:100;padding:20px;
 }
-.modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:26px;width:100%;max-width:440px;max-height:88vh;overflow-y:auto;box-shadow: var(--shadow);}
-.modal h3{margin:0 0 18px;font-size:17px; font-weight: 700;}
-.modal-actions{display:flex;gap:10px;margin-top:18px;}
+.modal{
+  background:var(--surface);
+  --glass;
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:32px;width:100%;max-width:460px;max-height:88vh;overflow-y:auto;
+  box-shadow: var(--shadow);
+}
+.modal h3{margin:0 0 20px;font-size:18px; font-weight: 800;}
+.modal-actions{display:flex;gap:12px;margin-top:20px;}
 .modal-actions .btn{flex:1;}
-.row-2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.row-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 
 .toast{
-  position:fixed;bottom:22px;left:50%;transform:translateX(-50%);
-  background:var(--surface-2);border:1px solid var(--border);color:var(--text);
-  padding:12px 20px;border-radius:12px;font-size:13.5px;z-index:200;box-shadow:0 10px 30px rgba(0,0,0,.4);
-  display:flex;align-items:center;gap:10px;
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+  background:var(--surface-2);
+  --glass;
+  border:1px solid var(--border);color:var(--text);
+  padding:14px 24px;border-radius:14px;font-size:14px;z-index:200;box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+  display:flex;align-items:center;gap:12px;
 }
-.toast.err{border-color:rgba(239,106,106,.4);color:var(--danger);}
+.toast.err{border-color:var(--danger);color:var(--danger);}
 
 /* ---------- رسپانسیو و موبایل ---------- */
 @media(max-width:820px){
@@ -496,15 +694,16 @@ button{font-family:inherit;}
   }
   .app-shell {
     flex-direction: column;
+    padding: 10px;
   }
   .sidebar {
     position: fixed;
-    top: 0; /* چسبیده به سقفِ سقف روی موبایل */
-    right: -270px; /* مخفی در حالت عادی */
-    height: 100vh; /* تمام ارتفاع صفحه */
-    width: 270px;
-    box-shadow: -10px 0 40px rgba(0,0,0,0.6);
-    z-index: 1000; /* روی همه‌چیز */
+    top: 0;
+    right: -290px;
+    height: 100vh;
+    width: 280px;
+    box-shadow: -10px 0 40px rgba(0,0,0,0.5);
+    z-index: 1000;
   }
   .sidebar.open {
     right: 0;
@@ -513,16 +712,17 @@ button{font-family:inherit;}
     display: block !important;
   }
   .main {
-    padding: 20px 16px;
+    padding: 20px;
+    height: auto;
   }
   .stat-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
+    gap: 12px;
   }
   .cal-day {
     aspect-ratio: auto;
-    height: 52px;
-    padding: 4px;
+    height: 56px;
+    padding: 6px;
     font-size: 11px;
   }
   .obsidian-layout {
@@ -532,7 +732,7 @@ button{font-family:inherit;}
   .obsidian-folders, .obsidian-notes-list {
     border-left: none;
     border-bottom: 1px solid var(--border);
-    max-height: 200px;
+    max-height: 220px;
   }
 }
 @media(max-width:480px){
@@ -549,43 +749,14 @@ button{font-family:inherit;}
 
 <!-- هدر موبایل -->
 <header class="mobile-header">
-  <div class="brand"><span class="brand-dot"></span><h1>دکتر خسته</h1></div>
+  <div class="brand" style="display:flex; align-items:center; gap:10px;"><span class="brand-dot"></span><h1 style="margin:0; font-size:18px;">دکتر خسته</h1></div>
   <button class="menu-toggle" onclick="toggleSidebar()">
     <svg class="svg-icon" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round" stroke-linejoin="round" /></svg>
   </button>
 </header>
 
-<!-- ================= صفحه راه‌اندازی اولیه ================= -->
-<div id="setup-screen" class="auth-wrap hidden">
-  <div class="auth-card">
-    <div class="brand"><span class="brand-dot"></span><h1>دکتر خسته</h1></div>
-    <p class="brand-sub">راه‌اندازی اولیه — ساخت ادمین اصلی</p>
-    <div class="pulse-line">
-      <svg viewBox="0 0 300 34" preserveAspectRatio="none"><path d="M0,17 L40,17 L52,4 L64,30 L76,17 L300,17"/></svg>
-    </div>
-    <div class="field"><label>نام نمایشی</label><input id="setup-name" placeholder="مثلاً علی"></div>
-    <div class="field"><label>نام کاربری</label><input id="setup-username" placeholder="admin"></div>
-    <div class="field"><label>رمز عبور</label><input id="setup-password" type="password" placeholder="یک رمز قوی انتخاب کنید"></div>
-    <div class="field"><label>رنگ اختصاصی شما</label><input id="setup-color" type="color" value="#f2a154"></div>
-    <button class="btn btn-primary btn-block" onclick="doSetup()">ساخت ادمین اصلی و ورود</button>
-    <div class="auth-error" id="setup-error"></div>
-  </div>
-</div>
-
-<!-- ================= صفحه ورود ================= -->
-<div id="login-screen" class="auth-wrap hidden">
-  <div class="auth-card">
-    <div class="brand"><span class="brand-dot"></span><h1>دکتر خسته</h1></div>
-    <p class="brand-sub">ورود به داشبورد مشترک</p>
-    <div class="field"><label>نام کاربری</label><input id="login-username" placeholder="نام کاربری"></div>
-    <div class="field"><label>رمز عبور</label><input id="login-password" type="password" placeholder="رمز عبور"></div>
-    <button class="btn btn-primary btn-block" onclick="doLogin()">ورود</button>
-    <div class="auth-error" id="login-error"></div>
-  </div>
-</div>
-
 <!-- ================= اپ اصلی ================= -->
-<div id="app" class="app-shell hidden">
+<div id="app" class="app-shell">
   <aside class="sidebar" id="sidebar">
     <div class="brand" style="display:flex; justify-content:space-between; align-items:center; width:100%;">
       <div style="display:flex; align-items:center; gap:10px;"><span class="brand-dot"></span><h1>دکتر خسته</h1></div>
@@ -596,7 +767,7 @@ button{font-family:inherit;}
 
     <!-- دکمه سوییچ تم دارک/لایت -->
     <div style="padding:0 6px 16px 6px;">
-      <button class="btn btn-ghost btn-block" onclick="toggleTheme()" style="justify-content: flex-start; gap:10px;">
+      <button class="btn btn-ghost btn-block" onclick="toggleTheme()" style="justify-content: flex-start; gap:12px;">
         <svg class="svg-icon" viewBox="0 0 24 24" id="theme-btn-icon"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M14 12a2 2 0 11-4 0 2 2 0 014 0z" stroke-linecap="round" stroke-linejoin="round"/></svg>
         <span id="theme-btn-text">تم روشن</span>
       </button>
@@ -639,9 +810,6 @@ button{font-family:inherit;}
         <div class="name" id="me-name"></div>
         <div class="role" id="me-role"></div>
       </div>
-      <button class="logout-btn" onclick="doLogout()" title="خروج">
-        <svg class="svg-icon" viewBox="0 0 24 24"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </button>
     </div>
   </aside>
 
@@ -654,17 +822,17 @@ button{font-family:inherit;}
       <div class="stat-grid" id="stat-grid" style="margin-top:16px;"></div>
 
       <!-- نمودارهای گرافیکی گزارش‌گیری -->
-      <div class="settings-card" style="margin-bottom: 22px;">
-        <h3 style="font-size: 15px; margin-bottom: 15px;">📊 نمودارها و تحلیل عملکرد</h3>
+      <div class="settings-card" style="margin-bottom: 24px;">
+        <h3 style="font-size: 16px; margin-bottom: 18px;">📊 نمودارها و تحلیل عملکرد</h3>
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
-          <div style="background: var(--surface-2); padding: 16px; border-radius: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; align-items: center;">
-            <span style="font-size: 13px; color: var(--text-dim); margin-bottom: 12px;">توزیع تسک‌ها بر اساس وضعیت</span>
+          <div style="background: var(--surface); padding: 18px; border-radius: 14px; border: 1px solid var(--border); display: flex; flex-direction: column; align-items: center;">
+            <span style="font-size: 13.5px; color: var(--text-dim); margin-bottom: 12px; font-weight:700;">توزیع تسک‌ها بر اساس وضعیت</span>
             <div style="position: relative; width: 220px; height: 220px;">
               <canvas id="statusChart"></canvas>
             </div>
           </div>
-          <div style="background: var(--surface-2); padding: 16px; border-radius: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; align-items: center;">
-            <span style="font-size: 13px; color: var(--text-dim); margin-bottom: 12px;">تعداد تسک‌ها بر اساس اولویت</span>
+          <div style="background: var(--surface); padding: 18px; border-radius: 14px; border: 1px solid var(--border); display: flex; flex-direction: column; align-items: center;">
+            <span style="font-size: 13.5px; color: var(--text-dim); margin-bottom: 12px; font-weight:700;">تعداد تسک‌ها بر اساس اولویت</span>
             <div style="position: relative; width: 100%; height: 220px;">
               <canvas id="priorityChart"></canvas>
             </div>
@@ -672,7 +840,7 @@ button{font-family:inherit;}
         </div>
       </div>
 
-      <div class="view-header"><h2 style="font-size:16px;">تسک‌های نزدیک</h2></div>
+      <div class="view-header"><h2 style="font-size:18px;">تسک‌های نزدیک</h2></div>
       <div class="task-list" id="overview-tasks"></div>
     </section>
 
@@ -707,24 +875,24 @@ button{font-family:inherit;}
       <div class="cal-grid" id="cal-dow"></div>
       <div class="cal-grid" id="cal-grid" style="margin-top:6px;"></div>
       <div class="cal-day-tasks">
-        <h3 style="font-size:14px;" id="cal-day-label"></h3>
+        <h3 style="font-size:15px; font-weight: 800;" id="cal-day-label"></h3>
         <div class="task-list" id="cal-day-tasks"></div>
 
         <!-- فرم ثبت سریع تسک برای روز انتخاب شده -->
-        <div id="cal-quick-add" class="settings-card" style="margin-top: 18px; padding: 16px;">
-          <h4 style="margin:0 0 10px; font-size:13px; color:var(--accent2); display:flex; align-items:center; gap:6px;">
+        <div id="cal-quick-add" class="settings-card" style="margin-top: 24px; padding: 20px;">
+          <h4 style="margin:0 0 14px; font-size:14.5px; color:var(--accent2); display:flex; align-items:center; gap:8px; font-weight: 800;">
             <svg class="svg-icon-inline" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round"/></svg>
             ثبت سریع تسک برای این روز
           </h4>
-          <div style="display:flex; flex-wrap:wrap; gap:10px;">
-            <input id="q-title" placeholder="عنوان تسک..." style="flex:2; min-width:180px; padding:8px 12px; border-radius:8px; border:1px solid var(--border); background:var(--surface-2); color:var(--text); outline:none;">
-            <select id="q-priority" style="flex:1; min-width:100px; padding:8px; border-radius:8px; border:1px solid var(--border); background:var(--surface-2); color:var(--text); outline:none;">
+          <div style="display:flex; flex-wrap:wrap; gap:12px;">
+            <input id="q-title" placeholder="عنوان تسک..." style="flex:2; min-width:200px; padding:10px 14px; border-radius:10px; border:1px solid var(--border); background:var(--surface); color:var(--text); outline:none;">
+            <select id="q-priority" style="flex:1; min-width:110px; padding:10px; border-radius:10px; border:1px solid var(--border); background:var(--surface); color:var(--text); outline:none;">
               <option value="normal">عادی</option>
               <option value="low">کم</option>
               <option value="high">بالا</option>
               <option value="urgent">فوری</option>
             </select>
-            <select id="q-assignee" style="flex:1; min-width:120px; padding:8px; border-radius:8px; border:1px solid var(--border); background:var(--surface-2); color:var(--text); outline:none;">
+            <select id="q-assignee" style="flex:1; min-width:130px; padding:10px; border-radius:10px; border:1px solid var(--border); background:var(--surface); color:var(--text); outline:none;">
               <option value="">واگذار به...</option>
             </select>
             <button class="btn btn-primary btn-sm" onclick="submitQuickTask()">ثبت</button>
@@ -747,11 +915,11 @@ button{font-family:inherit;}
       </div>
     </section>
 
-    <!-- یادداشت‌ها (ابسیدین استایل با پوشه بندی و مارک‌دان) -->
+    <!-- یادداشت‌ها (ابسیدین استایل با سیستم فولدری و مارک‌دان) -->
     <section class="view" id="view-notes">
       <div class="view-header">
-        <div><h2>یادداشت‌های تیمی (ادسیدین استایل)</h2><p>مدیریت با ساختار پوشه‌ای و ویرایشگر پیشرفته مارک‌دان با پشتیبانی آپلود فایل روی گیت‌هاب</p></div>
-        <div style="display:flex; gap:8px;">
+        <div><h2>یادداشت‌های تیمی (ابسیدین استایل)</h2><p>مدیریت با ساختار پوشه‌ای و ویرایشگر پیشرفته مارک‌دان با پشتیبانی آپلود فایل</p></div>
+        <div style="display:flex; gap:10px;">
           <button class="btn btn-ghost" onclick="createNewFolderPrompt()">+ پوشه جدید</button>
           <button class="btn btn-primary" onclick="createNewNoteObsidian()">+ یادداشت جدید</button>
         </div>
@@ -761,7 +929,7 @@ button{font-family:inherit;}
         <!-- ستون اول: پوشه‌ها -->
         <div class="obsidian-folders">
           <div class="folder-title">
-            <span>📁 پوشه‌ها (سیستم فایل)</span>
+            <span>📁 پوشه‌ها</span>
           </div>
           <div class="folder-list" id="obsidian-folder-list"></div>
         </div>
@@ -772,15 +940,15 @@ button{font-family:inherit;}
         <!-- ستون سوم: ویرایشگر و پیش‌نمایش -->
         <div class="obsidian-editor">
           <div class="editor-toolbar">
-            <div style="display:flex; align-items:center; gap:10px;">
-              <input id="note-title-input" placeholder="عنوان یادداشت..." style="background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:6px 12px; color:var(--text); outline:none; font-weight:700;">
-              <select id="note-folder-select" style="background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:6px; color:var(--text); outline:none;"></select>
+            <div style="display:flex; align-items:center; gap:12px;">
+              <input id="note-title-input" placeholder="عنوان یادداشت..." style="background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:8px 14px; color:var(--text); outline:none; font-weight:800;">
+              <select id="note-folder-select" style="background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:8px; color:var(--text); outline:none;"></select>
             </div>
-            <div style="display:flex; align-items:center; gap:8px;">
-              <!-- دکمه آپلود تصویر به گیت‌هاب -->
-              <input type="file" id="note-file-upload" class="hidden" onchange="uploadFileToGithubInNote(this)">
-              <button class="btn btn-ghost btn-sm" onclick="$('note-file-upload').click()">
-                📎 آپلود فایل به گیت‌هاب
+            <div style="display:flex; align-items:center; gap:10px;">
+              <!-- دکمه آپلود تصویر -->
+              <input type="file" id="note-file-upload" class="hidden" onchange="uploadFileInNote(this)">
+              <button class="btn btn-ghost btn-sm" onclick="document.getElementById('note-file-upload').click()">
+                📎 آپلود تصویر
               </button>
 
               <div class="editor-tabs">
@@ -801,7 +969,7 @@ button{font-family:inherit;}
     <!-- ادمین‌ها -->
     <section class="view" id="view-admins">
       <div class="view-header">
-        <div><h2>ادمین‌ها</h2><p>فقط ادمین اصلی می‌تواند ادمین جدید بسازد</p></div>
+        <div><h2>ادمین‌ها</h2><p>مدیریت همکاران و ادمین‌های سیستم</p></div>
         <button class="btn btn-primary hidden" id="add-admin-btn" onclick="openAdminModal()">
           <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round"/></svg>
           ادمین جدید
@@ -812,7 +980,7 @@ button{font-family:inherit;}
 
     <!-- تنظیمات -->
     <section class="view" id="view-settings">
-      <div class="view-header"><div><h2>تنظیمات</h2><p>اتصال تلگرام، بکاپ و پروفایل شما</p></div></div>
+      <div class="view-header"><div><h2>تنظیمات سیستم</h2><p>اتصال تلگرام و پروفایل شما</p></div></div>
 
       <div class="settings-card">
         <h3>
@@ -826,22 +994,13 @@ button{font-family:inherit;}
         </div>
       </div>
 
-      <div class="settings-card">
-        <h3>
-          <svg class="svg-icon" viewBox="0 0 24 24"><path d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          بکاپ گیت‌هاب
-        </h3>
-        <p>بکاپ خودکار هر شب انجام می‌شود؛ می‌توانید همین حالا هم یک بکاپ دستی بگیرید.</p>
-        <button class="btn btn-ghost" onclick="manualBackup()">گرفتن بکاپ الان</button>
-      </div>
-
       <!-- پنل تنظیمات پیشرفته سیستم مخصوص ادمین اصلی -->
-      <div class="settings-card hidden" id="advanced-settings-card">
+      <div class="settings-card" id="advanced-settings-card">
         <h3>
           <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          تنظیمات پیشرفته سیستم (مخصوص ادمین اصلی)
+          تنظیمات پیشرفته سیستم
         </h3>
-        <p>تمام متغیرها و کلیدهای مورد نیاز گیت‌هاب و تلگرام را می‌توانید مستقیماً از این‌جا و بدون نیاز به پنل کلودفلر مدیریت کنید.</p>
+        <p>تمام متغیرها و کلیدهای مورد نیاز تلگرام را می‌توانید مستقیماً از این‌جا مدیریت کنید.</p>
 
         <div class="row-2">
           <div class="field">
@@ -853,37 +1012,16 @@ button{font-family:inherit;}
             <input id="sys-tg-webhook" placeholder="یک رمز تصادفی">
           </div>
         </div>
-        <div class="row-2">
+        <div class="row-2" style="grid-template-columns: 1fr;">
           <div class="field">
             <label>آیدی ربات تلگرام (TELEGRAM_BOT_USERNAME)</label>
             <input id="sys-tg-username" placeholder="dr_khaste_bot">
           </div>
-          <div class="field">
-            <label>توکن گیت‌هاب (GITHUB_TOKEN)</label>
-            <input id="sys-gh-token" type="password" placeholder="ghp_...">
-          </div>
         </div>
-        <div class="row-2">
-          <div class="field">
-            <label>مخزن گیت‌هاب (GITHUB_REPO)</label>
-            <input id="sys-gh-repo" placeholder="username/repo">
-          </div>
-          <div class="field">
-            <label>برنچ مخزن (GITHUB_BRANCH)</label>
-            <input id="sys-gh-branch" placeholder="main">
-          </div>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;">
+          <button class="btn btn-primary" onclick="saveSystemSettings()">ذخیره تنظیمات سیستم</button>
+          <button class="btn btn-ghost" id="app-set-webhook-btn" onclick="triggerAppWebhookSetup()" style="border-color: var(--accent2); color: var(--accent2);">⚡ تنظیم خودکار وبهوک تلگرام ربات</button>
         </div>
-        <div class="row-2">
-          <div class="field">
-            <label>پوشه بکاپ‌ها (GITHUB_BACKUP_DIR)</label>
-            <input id="sys-gh-backup" placeholder="backups">
-          </div>
-          <div class="field">
-            <label>پوشه فایل‌های آپلود شده (GITHUB_FILES_DIR)</label>
-            <input id="sys-gh-files" placeholder="files">
-          </div>
-        </div>
-        <button class="btn btn-primary" onclick="saveSystemSettings()">ذخیره تنظیمات سیستم</button>
       </div>
 
       <div class="settings-card">
@@ -904,6 +1042,10 @@ button{font-family:inherit;}
 <div id="toast-root"></div>
 
 <script>
+// Pass WP API variables
+const WP_API_URL = "<?php echo esc_url_raw(rest_url('doctor-khaste/v1')); ?>";
+const WP_API_NONCE = "<?php echo esc_js(wp_create_nonce('wp_rest')); ?>";
+
 let ME = null;
 let TASKS = [];
 let NOTES = [];
@@ -964,13 +1106,17 @@ function toast(msg, isErr){
 }
 
 async function api(path, opts){
-  const res = await fetch('/api'+path, {
-    method: (opts&&opts.method)||'GET',
-    headers: {'Content-Type':'application/json'},
-    body: opts&&opts.body ? JSON.stringify(opts.body) : undefined,
+  const headers = {
+    'Content-Type': 'application/json',
+    'X-WP-Nonce': WP_API_NONCE
+  };
+  const res = await fetch(WP_API_URL + path, {
+    method: (opts && opts.method) || 'GET',
+    headers: headers,
+    body: opts && opts.body ? JSON.stringify(opts.body) : undefined,
   });
   const data = await res.json().catch(()=>({}));
-  if(!res.ok) throw new Error(data.error || 'خطا رخ داد');
+  if(!res.ok) throw new Error(data.message || data.error || 'خطا رخ داد');
   return data;
 }
 
@@ -980,65 +1126,27 @@ function initials(name){ return (name||'?').trim().slice(0,1); }
 async function boot(){
   initTheme();
   try{
-    const s = await api('/setup/status');
-    if(s.needsSetup){ show('setup-screen'); return; }
-  }catch(e){}
-  try{
     const m = await api('/me');
     ME = m.admin;
     await enterApp();
   }catch(e){
-    show('login-screen');
+    toast('مشکل در بارگذاری اطلاعات کاربر: ' + e.message, true);
   }
 }
 
-function show(id){
-  ['setup-screen','login-screen','app'].forEach(s=>$(s).classList.add('hidden'));
-  $(id).classList.remove('hidden');
-}
-
-async function doSetup(){
-  $('setup-error').textContent='';
-  try{
-    const body = {
-      name: $('setup-name').value.trim(),
-      username: $('setup-username').value.trim(),
-      password: $('setup-password').value,
-      color: $('setup-color').value,
-    };
-    if(!body.name||!body.username||!body.password){ $('setup-error').textContent='همه فیلدها الزامی است.'; return; }
-    const r = await api('/setup', {method:'POST', body});
-    ME = r.admin;
-    await enterApp();
-  }catch(e){ $('setup-error').textContent = e.message; }
-}
-
-async function doLogin(){
-  $('login-error').textContent='';
-  try{
-    const body = { username: $('login-username').value.trim(), password: $('login-password').value };
-    const r = await api('/login', {method:'POST', body});
-    ME = r.admin;
-    await enterApp();
-  }catch(e){ $('login-error').textContent = e.message; }
-}
-
-async function doLogout(){
-  await api('/logout', {method:'POST'});
-  ME=null; location.reload();
-}
-
 async function enterApp(){
-  show('app');
   $('me-avatar').style.background = ME.color;
   $('me-avatar').textContent = initials(ME.name);
   $('me-name').textContent = ME.name;
   $('me-role').textContent = ME.is_super ? 'ادمین اصلی' : 'ادمین';
-  if(ME.is_super){
+
+  if (ME.is_super) {
     $('add-admin-btn').classList.remove('hidden');
-    $('advanced-settings-card').classList.remove('hidden');
     loadSystemSettings();
+  } else {
+    $('advanced-settings-card').classList.add('hidden');
   }
+
   $('profile-name').value = ME.name;
   $('profile-color').value = ME.color;
 
@@ -1130,7 +1238,7 @@ function renderOverviewCharts() {
       labels: ['در انتظار', 'در حال انجام', 'انجام‌شده'],
       datasets: [{
         data: [pendingCount, inProgressCount, doneCount],
-        backgroundColor: ['#f2a154', '#4fd1c5', '#57d38c'],
+        backgroundColor: ['#f59e0b', '#10b981', '#10b981'],
         borderWidth: 1,
         borderColor: 'var(--surface-2)'
       }]
@@ -1157,7 +1265,7 @@ function renderOverviewCharts() {
       datasets: [{
         label: 'تعداد تسک‌ها',
         data: [urgentCount, highCount, normalCount, lowCount],
-        backgroundColor: ['#ef6a6a', '#f2a154', '#4fd1c5', '#8b93ac'],
+        backgroundColor: ['#ef4444', '#f59e0b', '#10b981', '#9ca3af'],
         borderWidth: 0,
         borderRadius: 6
       }]
@@ -1270,8 +1378,8 @@ function openTaskModal(t){
     <div class="field"><label>عنوان</label><input id="m-title" value="${t?escapeAttr(t.title):''}"></div>
     <div class="field"><label>توضیحات</label><textarea id="m-desc" rows="3">${t?escapeHtml(t.description||''):''}</textarea></div>
 
-    <label style="display:block; font-size:13px; color:var(--text-dim); margin-bottom:6px;">موعد (تاریخ شمسی)</label>
-    <div class="row-2" style="grid-template-columns: 1fr 1fr 1fr; margin-bottom:14px;">
+    <label style="display:block; font-size:13.5px; color:var(--text-dim); margin-bottom:8px; font-weight:600;">موعد (تاریخ شمسی)</label>
+    <div class="row-2" style="grid-template-columns: 1fr 1fr 1fr; margin-bottom:18px;">
       <div class="field" style="margin-bottom:0;"><select id="m-sh-day">${daysOptions}</select></div>
       <div class="field" style="margin-bottom:0;"><select id="m-sh-month">${monthsOptions}</select></div>
       <div class="field" style="margin-bottom:0;"><select id="m-sh-year">${yearsOptions}</select></div>
@@ -1526,6 +1634,24 @@ async function submitQuickTask() {
   }
 }
 
+async function triggerAppWebhookSetup() {
+  const btn = $('app-set-webhook-btn');
+  btn.disabled = true;
+  toast('در حال ارسال دستور به تلگرام...');
+  try {
+    const res = await api('/telegram/set-webhook', { method: 'POST' });
+    if (res.ok) {
+      toast('وبهوک با موفقیت روی تلگرام ست شد! ✅');
+    } else {
+      throw new Error(res.message || 'مشکل در تنظیم وبهوک');
+    }
+  } catch (e) {
+    toast('خطا: ' + e.message, true);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
 /* ---------------- میز کار و گفتگوی تیمی ---------------- */
 async function loadChatMessages() {
   try {
@@ -1704,15 +1830,15 @@ async function saveActiveNoteObsidian() {
   }
 }
 
-// آپلود فایل ضمیمه در حین ویرایش یادداشت مارک‌دان مستقیم روی گیت‌هاب
-async function uploadFileToGithubInNote(inputEl) {
+// آپلود فایل ضمیمه در حین ویرایش یادداشت مارک‌دان
+async function uploadFileInNote(inputEl) {
   const file = inputEl.files[0];
   if (!file) return;
 
   const reader = new FileReader();
   reader.onload = async () => {
     const dataBase64 = reader.result;
-    toast('در حال آپلود فایل به گیت‌هاب...');
+    toast('در حال آپلود تصویر...');
     try {
       const res = await api('/upload', {
         method: 'POST',
@@ -1727,9 +1853,9 @@ async function uploadFileToGithubInNote(inputEl) {
       textarea.value = text.substring(0, start) + mdTag + text.substring(end);
       textarea.focus();
       updateMarkdownPreview();
-      toast('فایل با موفقیت روی گیت‌هاب هاست شد! 🚀');
+      toast('تصویر با موفقیت آپلود و پیوست شد! 🚀');
     } catch (e) {
-      toast('خطا در آپلود گیت‌هاب: ' + e.message, true);
+      toast('خطا در آپلود تصویر: ' + e.message, true);
     }
   };
   reader.readAsDataURL(file);
@@ -1745,12 +1871,14 @@ function renderAdmins(){
   $('admin-grid').innerHTML = ADMINS.map(a=>`
     <div class="admin-card">
       <div class="avatar" style="background:${a.color}">${initials(a.name)}</div>
-      <div style="font-weight:700;font-size:14px;">${escapeHtml(a.name)}</div>
-      <div style="color:var(--text-dim);font-size:12px;">@${escapeHtml(a.username)}</div>
-      ${a.is_super?'<div class="super-tag">ادمین اصلی</div>':''}
-      ${a.telegram_chat_id ? `<div style="margin-top:8px;font-size:11px;color:var(--success);">🔗 تلگرام: ${a.telegram_chat_id}</div>` : '<div style="margin-top:8px;font-size:11px;color:var(--text-dim);">⚠️ تلگرام وصل نیست</div>'}
-      ${(ME.is_super) ? `<button class="btn btn-ghost btn-sm" style="margin-top:12px; margin-left:4px;" onclick="openEditAdminModal(${a.id})">ویرایش</button>` : ''}
-      ${(ME.is_super && a.id!==ME.id) ? '<button class="btn btn-danger btn-sm" style="margin-top:12px;" onclick="deleteAdmin('+a.id+')">حذف</button>' : ''}
+      <div style="font-weight:800;font-size:15px;">${escapeHtml(a.name)}</div>
+      <div style="color:var(--text-dim);font-size:12.5px;">@${escapeHtml(a.username)}</div>
+      ${a.is_super?'<div class="super-tag">مدیر کل</div>':''}
+      ${a.telegram_chat_id ? `<div style="margin-top:10px;font-size:12px;color:var(--success);">🔗 تلگرام: ${escapeHtml(a.telegram_chat_id)}</div>` : '<div style="margin-top:10px;font-size:12px;color:var(--text-dim);">⚠️ تلگرام وصل نیست</div>'}
+      <div style="display:flex; gap:8px; justify-content:center; margin-top:16px;">
+        ${(ME.is_super || a.id === ME.id) ? `<button class="btn btn-ghost btn-sm" onclick="openEditAdminModal(${a.id})">ویرایش</button>` : ''}
+        ${(ME.is_super && a.id !== ME.id) ? `<button class="btn btn-danger btn-sm" onclick="deleteAdmin(${a.id})">حذف</button>` : ''}
+      </div>
     </div>
   `).join('');
 }
@@ -1815,23 +1943,18 @@ function openEditAdminModal(adminId) {
       closeModal();
       await loadAdmins();
       renderAdmins();
-      toast('تخییرات ادمین ذخیره شد ✅');
+      toast('تغییرات ادمین ذخیره شد ✅');
     } catch (e) {
       toast(e.message, true);
     }
   });
 }
 
-/* ---------------- تنظیمات: تلگرام / بکاپ / پروفایل / سیستم پیشرفته ---------------- */
+/* ---------------- تنظیمات: تلگرام / پروفایل / سیستم پیشرفته ---------------- */
 async function loadTelegramStatus(){
   const on = !!ME.telegram_chat_id;
   $('tg-dot').className = 'status-dot ' + (on?'on':'off');
   $('tg-dot-label').innerHTML = on ? `متصل به آیدی عددی تلگرام شما: <code>${ME.telegram_chat_id}</code>` : 'آیدی تلگرام شما هنوز تنظیم نشده است. از منوی ادمین‌ها آیدی خود را وارد کنید.';
-}
-
-async function manualBackup(){
-  try{ api('/backup', {method:'POST'}); toast('بکاپ با موفقیت در گیت‌هاب ذخیره شد ✅'); }
-  catch(e){ toast('خطا در بکاپ: '+e.message, true); }
 }
 
 // مدیریت متغیرهای سیستم از داخل اپلیکیشن
@@ -1842,11 +1965,6 @@ async function loadSystemSettings() {
     $('sys-tg-token').value = s.TELEGRAM_BOT_TOKEN || '';
     $('sys-tg-webhook').value = s.TELEGRAM_WEBHOOK_SECRET || '';
     $('sys-tg-username').value = s.TELEGRAM_BOT_USERNAME || '';
-    $('sys-gh-token').value = s.GITHUB_TOKEN || '';
-    $('sys-gh-repo').value = s.GITHUB_REPO || '';
-    $('sys-gh-branch').value = s.GITHUB_BRANCH || '';
-    $('sys-gh-backup').value = s.GITHUB_BACKUP_DIR || '';
-    $('sys-gh-files').value = s.GITHUB_FILES_DIR || '';
   } catch (e) {
     toast('خطا در بارگذاری تنظیمات سیستم: ' + e.message, true);
   }
@@ -1856,12 +1974,7 @@ async function saveSystemSettings() {
   const body = {
     TELEGRAM_BOT_TOKEN: $('sys-tg-token').value,
     TELEGRAM_WEBHOOK_SECRET: $('sys-tg-webhook').value,
-    TELEGRAM_BOT_USERNAME: $('sys-tg-username').value,
-    GITHUB_TOKEN: $('sys-gh-token').value,
-    GITHUB_REPO: $('sys-gh-repo').value,
-    GITHUB_BRANCH: $('sys-gh-branch').value,
-    GITHUB_BACKUP_DIR: $('sys-gh-backup').value,
-    GITHUB_FILES_DIR: $('sys-gh-files').value,
+    TELEGRAM_BOT_USERNAME: $('sys-tg-username').value
   };
   try {
     await api('/settings', { method: 'POST', body });
