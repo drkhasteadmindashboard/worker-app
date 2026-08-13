@@ -71,6 +71,9 @@ function doctor_khaste_activate() {
     dbDelta($sql_notes);
     dbDelta($sql_messages);
 
+    // Register custom role and capability
+    doctor_khaste_setup_roles_and_capabilities();
+
     // Register Daily Cron Job
     if (!wp_next_scheduled('doctor_khaste_daily_cron')) {
         wp_schedule_event(time(), 'daily', 'doctor_khaste_daily_cron');
@@ -81,10 +84,39 @@ function doctor_khaste_activate() {
     flush_rewrite_rules();
 }
 
-// Deactivation: Clean up scheduler & Flush rewrites
+// Register custom role and capability helper
+function doctor_khaste_setup_roles_and_capabilities() {
+    // Add custom capability to administrator role
+    $admin_role = get_role('administrator');
+    if ($admin_role) {
+        $admin_role->add_cap('access_doctor_khaste');
+    }
+
+    // Add custom role for doctor khaste secondary admins
+    add_role(
+        'doctor_khaste_admin',
+        'ادمین دکتر خسته',
+        array(
+            'read'                 => true, // Required to login and see the WP dashboard
+            'access_doctor_khaste' => true, // Access to our plugin only
+        )
+    );
+}
+
+// Deactivation: Clean up scheduler, roles & Flush rewrites
 register_deactivation_hook(__FILE__, 'doctor_khaste_deactivate');
 function doctor_khaste_deactivate() {
     wp_clear_scheduled_hook('doctor_khaste_daily_cron');
+
+    // Remove capability from administrator
+    $admin_role = get_role('administrator');
+    if ($admin_role) {
+        $admin_role->remove_cap('access_doctor_khaste');
+    }
+
+    // Remove custom role
+    remove_role('doctor_khaste_admin');
+
     flush_rewrite_rules();
 }
 
@@ -146,12 +178,12 @@ function doctor_khaste_serve_frontend() {
             exit;
         }
 
-        // Must be an administrator with manage_options capability
-        if (!current_user_can('manage_options')) {
+        // Must be an authorized admin with access_doctor_khaste capability
+        if (!current_user_can('access_doctor_khaste')) {
             wp_die(
                 '<div style="text-align:center; padding: 50px; font-family: Tahoma, Arial, sans-serif; background:#070a13; color:#f43f5e; min-height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center;">
                     <h2 style="font-size:24px; margin-bottom:10px;">⚡ دسترسی غیر مجاز ⚡</h2>
-                    <p style="color:#94a3b8; font-size:16px;">فقط کاربران با نقش مدیر کل (Administrator) اجازه دسترسی به این سیستم مدیریتی را دارند.</p>
+                    <p style="color:#94a3b8; font-size:16px;">کاربر گرامی، شما دسترسی لازم برای استفاده از این سیستم مدیریتی را ندارید.</p>
                     <a href="' . wp_logout_url(home_url('/doctor-khaste')) . '" style="margin-top:20px; padding:10px 20px; background:#f43f5e; color:#fff; text-decoration:none; border-radius:8px; font-weight:bold;">خروج از حساب فعلی</a>
                  </div>',
                 'دسترسی غیر مجاز'
@@ -171,7 +203,7 @@ function doctor_khaste_add_admin_menu() {
     add_menu_page(
         'دکتر خسته', // Page title
         'دکتر خسته 🩺', // Menu title
-        'manage_options', // Capability
+        'access_doctor_khaste', // Capability
         'doctor-khaste-dashboard', // Menu slug
         'doctor_khaste_render_admin_menu_page', // Callback function
         'dashicons-clipboard', // Icon url
@@ -318,7 +350,7 @@ function doctor_khaste_register_routes() {
 
 // Permission verification callback
 function doctor_khaste_api_permission() {
-    return current_user_can('manage_options');
+    return current_user_can('access_doctor_khaste');
 }
 
 // Webhook handling
@@ -376,7 +408,7 @@ function doctor_khaste_get_me() {
             'username'        => $current->user_login,
             'name'            => $current->display_name ? $current->display_name : $current->user_login,
             'color'           => $color,
-            'is_super'        => user_can($current->ID, 'manage_options'),
+            'is_super'        => user_can($current->ID, 'manage_options'), // Only super administrator is_super
             'telegram_linked' => !empty($telegram_chat_id),
             'telegram_chat_id'=> $telegram_chat_id ? $telegram_chat_id : null
         )
@@ -454,9 +486,12 @@ function doctor_khaste_save_message($request) {
     return rest_ensure_response(array('ok' => true));
 }
 
-// 4. Admins / WordPress Administrator Integration
+// 4. Admins / WordPress Administrator & Custom Role Integration
 function doctor_khaste_get_admins() {
-    $admins = get_users(array('role' => 'administrator'));
+    // Get both full Administrators and secondary doctor_khaste_admin users
+    $admins = get_users(array(
+        'role__in' => array('administrator', 'doctor_khaste_admin')
+    ));
     $list = array();
     foreach ($admins as $a) {
         $color = get_user_meta($a->ID, '_doctor_khaste_color', true);
@@ -468,7 +503,7 @@ function doctor_khaste_get_admins() {
             'username'         => $a->user_login,
             'name'             => $a->display_name ? $a->display_name : $a->user_login,
             'color'            => $color,
-            'is_super'         => true,
+            'is_super'         => user_can($a->ID, 'manage_options'), // True if Super Admin (administrator)
             'telegram_chat_id' => $telegram_chat_id ? $telegram_chat_id : null,
             'telegram_linked'  => !empty($telegram_chat_id),
             'created_at'       => $a->user_registered
@@ -478,6 +513,11 @@ function doctor_khaste_get_admins() {
 }
 
 function doctor_khaste_create_admin($request) {
+    // Only the super administrator (with manage_options) can create secondary admins
+    if (!current_user_can('manage_options')) {
+        return new WP_Error('forbidden', 'فقط ادمین اصلی می‌تواند ادمین جدید بسازد.', array('status' => 403));
+    }
+
     $body = $request->get_json_params();
     $username = isset($body['username']) ? trim($body['username']) : '';
     $password = isset($body['password']) ? trim($body['password']) : '';
@@ -498,10 +538,11 @@ function doctor_khaste_create_admin($request) {
         return new WP_Error('creation_failed', $user_id->get_error_message(), array('status' => 500));
     }
 
+    // Secondary admins are created with our custom role 'doctor_khaste_admin' (highly sandboxed, no default WP access)
     wp_update_user(array(
         'ID'           => $user_id,
         'display_name' => $name,
-        'role'         => 'administrator'
+        'role'         => 'doctor_khaste_admin'
     ));
 
     update_user_meta($user_id, '_doctor_khaste_color', $color);
@@ -516,7 +557,7 @@ function doctor_khaste_create_admin($request) {
             'username'         => $username,
             'name'             => $name,
             'color'            => $color,
-            'is_super'         => true,
+            'is_super'         => false, // Created secondary admin is not super administrator
             'telegram_chat_id' => $telegram_chat_id ? $telegram_chat_id : null,
             'telegram_linked'  => !empty($telegram_chat_id),
             'created_at'       => $user->user_registered
@@ -528,9 +569,15 @@ function doctor_khaste_update_admin($request) {
     $id = (int)$request->get_param('id');
     $body = $request->get_json_params();
 
-    // Check if target user exists and has administrator role
+    // Secondary admins can only update their OWN profiles.
+    // Only the super administrator (with manage_options) can update other admins' profiles.
+    if (!current_user_can('manage_options') && $id !== get_current_user_id()) {
+        return new WP_Error('forbidden', 'شما دسترسی لازم برای ویرایش سایر ادمین‌ها را ندارید.', array('status' => 403));
+    }
+
+    // Check if target user exists and has doctor khaste access
     $user = get_userdata($id);
-    if (!$user || !user_can($id, 'manage_options')) {
+    if (!$user || !user_can($id, 'access_doctor_khaste')) {
         return new WP_Error('not_found', 'کاربر یافت نشد یا دسترسی مدیر ندارد.', array('status' => 404));
     }
 
@@ -548,7 +595,9 @@ function doctor_khaste_update_admin($request) {
         update_user_meta($id, '_doctor_khaste_color', trim($body['color']));
     }
     if (isset($body['telegram_chat_id'])) {
-        update_user_meta($id, '_doctor_khaste_telegram_chat_id', trim($body['telegram_chat_id']));
+        // Sanitize telegram_chat_id to protect against XSS (only permit numeric values and minus sign)
+        $clean_tg_id = preg_replace('/[^0-9-]/', '', $body['telegram_chat_id']);
+        update_user_meta($id, '_doctor_khaste_telegram_chat_id', $clean_tg_id);
     }
 
     $updated_user = get_userdata($id);
@@ -562,7 +611,7 @@ function doctor_khaste_update_admin($request) {
             'username'         => $updated_user->user_login,
             'name'             => $updated_user->display_name ? $updated_user->display_name : $updated_user->user_login,
             'color'            => $color,
-            'is_super'         => true,
+            'is_super'         => user_can($id, 'manage_options'),
             'telegram_chat_id' => $telegram_chat_id ? $telegram_chat_id : null,
             'telegram_linked'  => !empty($telegram_chat_id),
             'created_at'       => $updated_user->user_registered
@@ -571,6 +620,11 @@ function doctor_khaste_update_admin($request) {
 }
 
 function doctor_khaste_delete_admin($request) {
+    // Only the super administrator (with manage_options) can delete admins
+    if (!current_user_can('manage_options')) {
+        return new WP_Error('forbidden', 'فقط ادمین اصلی می‌تواند ادمین حذف کند.', array('status' => 403));
+    }
+
     $id = (int)$request->get_param('id');
     if ($id === get_current_user_id()) {
         return new WP_Error('bad_request', 'نمی‌توانید خودتان را حذف کنید.', array('status' => 400));

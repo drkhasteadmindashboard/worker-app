@@ -969,8 +969,8 @@ button{font-family:inherit;}
     <!-- ادمین‌ها -->
     <section class="view" id="view-admins">
       <div class="view-header">
-        <div><h2>ادمین‌ها (مدیران کل وردپرس)</h2><p>می‌توانید کاربران جدید را از همین بخش بسازید یا ویرایش کنید</p></div>
-        <button class="btn btn-primary" id="add-admin-btn" onclick="openAdminModal()">
+        <div><h2>ادمین‌ها</h2><p>مدیریت همکاران و ادمین‌های سیستم</p></div>
+        <button class="btn btn-primary hidden" id="add-admin-btn" onclick="openAdminModal()">
           <svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round"/></svg>
           ادمین جدید
         </button>
@@ -1140,7 +1140,13 @@ async function enterApp(){
   $('me-name').textContent = ME.name;
   $('me-role').textContent = ME.is_super ? 'ادمین اصلی' : 'ادمین';
 
-  loadSystemSettings();
+  if (ME.is_super) {
+    $('add-admin-btn').classList.remove('hidden');
+    loadSystemSettings();
+  } else {
+    $('advanced-settings-card').classList.add('hidden');
+  }
+
   $('profile-name').value = ME.name;
   $('profile-color').value = ME.color;
 
@@ -1868,10 +1874,10 @@ function renderAdmins(){
       <div style="font-weight:800;font-size:15px;">${escapeHtml(a.name)}</div>
       <div style="color:var(--text-dim);font-size:12.5px;">@${escapeHtml(a.username)}</div>
       ${a.is_super?'<div class="super-tag">مدیر کل</div>':''}
-      ${a.telegram_chat_id ? `<div style="margin-top:10px;font-size:12px;color:var(--success);">🔗 تلگرام: ${a.telegram_chat_id}</div>` : '<div style="margin-top:10px;font-size:12px;color:var(--text-dim);">⚠️ تلگرام وصل نیست</div>'}
+      ${a.telegram_chat_id ? `<div style="margin-top:10px;font-size:12px;color:var(--success);">🔗 تلگرام: ${escapeHtml(a.telegram_chat_id)}</div>` : '<div style="margin-top:10px;font-size:12px;color:var(--text-dim);">⚠️ تلگرام وصل نیست</div>'}
       <div style="display:flex; gap:8px; justify-content:center; margin-top:16px;">
-        <button class="btn btn-ghost btn-sm" onclick="openEditAdminModal(${a.id})">ویرایش</button>
-        ${a.id !== ME.id ? `<button class="btn btn-danger btn-sm" onclick="deleteAdmin(${a.id})">حذف</button>` : ''}
+        ${(ME.is_super || a.id === ME.id) ? `<button class="btn btn-ghost btn-sm" onclick="openEditAdminModal(${a.id})">ویرایش</button>` : ''}
+        ${(ME.is_super && a.id !== ME.id) ? `<button class="btn btn-danger btn-sm" onclick="deleteAdmin(${a.id})">حذف</button>` : ''}
       </div>
     </div>
   `).join('');
