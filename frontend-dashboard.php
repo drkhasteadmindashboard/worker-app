@@ -1018,7 +1018,10 @@ button{font-family:inherit;}
             <input id="sys-tg-username" placeholder="dr_khaste_bot">
           </div>
         </div>
-        <button class="btn btn-primary" onclick="saveSystemSettings()">ذخیره تنظیمات سیستم</button>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;">
+          <button class="btn btn-primary" onclick="saveSystemSettings()">ذخیره تنظیمات سیستم</button>
+          <button class="btn btn-ghost" id="app-set-webhook-btn" onclick="triggerAppWebhookSetup()" style="border-color: var(--accent2); color: var(--accent2);">⚡ تنظیم خودکار وبهوک تلگرام ربات</button>
+        </div>
       </div>
 
       <div class="settings-card">
@@ -1622,6 +1625,24 @@ async function submitQuickTask() {
     toast('تسک جدید ثبت و به تقویم اضافه شد! ✅');
   } catch (e) {
     toast(e.message, true);
+  }
+}
+
+async function triggerAppWebhookSetup() {
+  const btn = $('app-set-webhook-btn');
+  btn.disabled = true;
+  toast('در حال ارسال دستور به تلگرام...');
+  try {
+    const res = await api('/telegram/set-webhook', { method: 'POST' });
+    if (res.ok) {
+      toast('وبهوک با موفقیت روی تلگرام ست شد! ✅');
+    } else {
+      throw new Error(res.message || 'مشکل در تنظیم وبهوک');
+    }
+  } catch (e) {
+    toast('خطا: ' + e.message, true);
+  } finally {
+    btn.disabled = false;
   }
 }
 

@@ -146,8 +146,8 @@ function doctor_khaste_serve_frontend() {
             exit;
         }
 
-        // Must be an administrator
-        if (!current_user_can('administrator')) {
+        // Must be an administrator with manage_options capability
+        if (!current_user_can('manage_options')) {
             wp_die(
                 '<div style="text-align:center; padding: 50px; font-family: Tahoma, Arial, sans-serif; background:#070a13; color:#f43f5e; min-height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center;">
                     <h2 style="font-size:24px; margin-bottom:10px;">⚡ دسترسی غیر مجاز ⚡</h2>
@@ -171,7 +171,7 @@ function doctor_khaste_add_admin_menu() {
     add_menu_page(
         'دکتر خسته', // Page title
         'دکتر خسته 🩺', // Menu title
-        'administrator', // Capability
+        'manage_options', // Capability
         'doctor-khaste-dashboard', // Menu slug
         'doctor_khaste_render_admin_menu_page', // Callback function
         'dashicons-clipboard', // Icon url
@@ -188,10 +188,21 @@ function doctor_khaste_render_admin_menu_page() {
             به بخش مدیریت همکاران و ادمین‌های پروژه خوش آمدید! هم‌اکنون می‌توانید اپلیکیشن مدیریت تسک، تقویم شمسی، یادداشت‌های تیمی ابسیدین و چت لحظه‌ای اختصاصی را به صورت ۱۰۰٪ مجزا و تمام‌صفحه باز کنید.
         </p>
 
-        <div style="margin-bottom: 40px;">
+        <div style="margin-bottom: 30px;">
             <a href="<?php echo esc_url(home_url('/doctor-khaste')); ?>" target="_blank" style="display: inline-block; padding: 14px 32px; background: #f59e0b; color: #111; text-decoration: none; border-radius: 10px; font-weight: bold; font-size: 16px; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3); transition: transform 0.2s;">
                 🚀 ورود به اپلیکیشن اختصاصی (تمام صفحه)
             </a>
+        </div>
+
+        <div style="margin-bottom: 40px; background: #f8fafc; padding: 20px; border-radius: 10px; border: 1px dashed #cbd5e1;">
+            <h3 style="font-size: 16px; color: #0f172a; margin-bottom: 12px; font-weight: bold; text-align: right;">🔗 تنظیم آسان و خودکار وبهوک تلگرام:</h3>
+            <p style="font-size: 13.5px; color: #475569; text-align: right; margin-bottom: 16px; line-height: 1.6;">
+                با پر کردن مقادیر توکن و رمز در صفحه تنظیمات اپلیکیشن اختصاصی، می‌توانید با دکمه زیر وبهوک ربات تلگرام را مستقیماً و به صورت خودکار به همین سایت متصل کنید تا دستورات و دکمه‌ها فوراً فعال شوند!
+            </p>
+            <button id="wp-set-webhook-btn" onclick="triggerWpWebhookSetup()" style="display: block; width: 100%; padding: 12px; background: #10b981; color: #fff; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.25);">
+                ⚡ تنظیم اتوماتیک وبهوک تلگرام ربات روی این سایت
+            </button>
+            <div id="wp-webhook-result" style="margin-top: 12px; font-size: 13.5px; font-weight: bold;"></div>
         </div>
 
         <div style="border-top: 1px solid #e2e8f0; padding-top: 30px; text-align: right;">
@@ -203,6 +214,38 @@ function doctor_khaste_render_admin_menu_page() {
             </ul>
         </div>
     </div>
+
+    <script>
+    async function triggerWpWebhookSetup() {
+        const btn = document.getElementById('wp-set-webhook-btn');
+        const resDiv = document.getElementById('wp-webhook-result');
+        btn.disabled = true;
+        resDiv.style.color = '#475569';
+        resDiv.textContent = 'در حال ارتباط با تلگرام...';
+
+        try {
+            const res = await fetch("<?php echo esc_url_raw(rest_url('doctor-khaste/v1/telegram/set-webhook')); ?>", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-WP-Nonce': '<?php echo esc_js(wp_create_nonce('wp_rest')); ?>'
+                }
+            });
+            const data = await res.json();
+            if (res.ok && data.ok) {
+                resDiv.style.color = '#10b981';
+                resDiv.textContent = '✅ وبهوک با موفقیت روی تلگرام ست شد!';
+            } else {
+                throw new Error(data.message || 'خطا در ثبت وبهوک');
+            }
+        } catch (e) {
+            resDiv.style.color = '#ef4444';
+            resDiv.textContent = '❌ خطا: ' + e.message;
+        } finally {
+            btn.disabled = false;
+        }
+    }
+    </script>
     <?php
 }
 
@@ -224,6 +267,9 @@ function doctor_khaste_register_routes() {
         '/settings' => array(
             'GET'  => 'doctor_khaste_get_settings',
             'POST' => 'doctor_khaste_save_settings'
+        ),
+        '/telegram/set-webhook' => array(
+            'POST' => 'doctor_khaste_auto_set_webhook'
         ),
         '/messages' => array(
             'GET'  => 'doctor_khaste_get_messages',
@@ -272,7 +318,7 @@ function doctor_khaste_register_routes() {
 
 // Permission verification callback
 function doctor_khaste_api_permission() {
-    return current_user_can('administrator');
+    return current_user_can('manage_options');
 }
 
 // Webhook handling
@@ -290,6 +336,32 @@ function doctor_khaste_handle_tg_webhook_api($request) {
     return rest_ensure_response(array('ok' => true));
 }
 
+// One-click Auto Set Webhook Endpoint
+function doctor_khaste_auto_set_webhook() {
+    $botToken = get_option('doctor_khaste_TELEGRAM_BOT_TOKEN');
+    $webhookSecret = get_option('doctor_khaste_TELEGRAM_WEBHOOK_SECRET');
+
+    if (empty($botToken) || empty($webhookSecret)) {
+        return new WP_Error('incomplete_settings', 'لطفاً توکن ربات و رمز وبهوک را ابتدا در بخش تنظیمات اپلیکیشن ذخیره کنید.', array('status' => 400));
+    }
+
+    $webhookUrl = rest_url("doctor-khaste/v1/telegram/webhook/{$webhookSecret}");
+    $tgApiUrl = "https://api.telegram.org/bot{$botToken}/setWebhook?url=" . urlencode($webhookUrl);
+
+    $response = wp_remote_get($tgApiUrl);
+    if (is_wp_error($response)) {
+        return new WP_Error('telegram_api_error', $response->get_error_message(), array('status' => 500));
+    }
+
+    $body = json_decode(wp_remote_retrieve_body($response), true);
+    if (empty($body) || !$body['ok']) {
+        $desc = isset($body['description']) ? $body['description'] : 'Unknown error';
+        return new WP_Error('telegram_set_failed', 'تلگرام خطای زیر را برگرداند: ' . $desc, array('status' => 400));
+    }
+
+    return rest_ensure_response(array('ok' => true));
+}
+
 // 1. Get Me details
 function doctor_khaste_get_me() {
     $current = wp_get_current_user();
@@ -304,7 +376,7 @@ function doctor_khaste_get_me() {
             'username'        => $current->user_login,
             'name'            => $current->display_name ? $current->display_name : $current->user_login,
             'color'           => $color,
-            'is_super'        => user_can($current->ID, 'administrator'),
+            'is_super'        => user_can($current->ID, 'manage_options'),
             'telegram_linked' => !empty($telegram_chat_id),
             'telegram_chat_id'=> $telegram_chat_id ? $telegram_chat_id : null
         )
@@ -458,7 +530,7 @@ function doctor_khaste_update_admin($request) {
 
     // Check if target user exists and has administrator role
     $user = get_userdata($id);
-    if (!$user || !user_can($id, 'administrator')) {
+    if (!$user || !user_can($id, 'manage_options')) {
         return new WP_Error('not_found', 'کاربر یافت نشد یا دسترسی مدیر ندارد.', array('status' => 404));
     }
 
