@@ -165,6 +165,47 @@ function doctor_khaste_serve_frontend() {
     }
 }
 
+// --- Add WordPress Admin Menu page ---
+add_action('admin_menu', 'doctor_khaste_add_admin_menu');
+function doctor_khaste_add_admin_menu() {
+    add_menu_page(
+        'دکتر خسته', // Page title
+        'دکتر خسته 🩺', // Menu title
+        'administrator', // Capability
+        'doctor-khaste-dashboard', // Menu slug
+        'doctor_khaste_render_admin_menu_page', // Callback function
+        'dashicons-clipboard', // Icon url
+        2 // Position
+    );
+}
+
+function doctor_khaste_render_admin_menu_page() {
+    ?>
+    <div class="wrap" style="max-width: 800px; margin: 30px auto; padding: 30px; background: #fff; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); font-family: Tahoma, Arial, sans-serif; text-align: center; direction: rtl;">
+        <span style="font-size: 52px; display: block; margin-bottom: 20px;">🩺</span>
+        <h1 style="font-size: 28px; font-weight: 900; color: #1e293b; margin-bottom: 12px;">سیستم مدیریت خلاقانه «دکتر خسته»</h1>
+        <p style="font-size: 15px; color: #64748b; line-height: 1.8; margin-bottom: 30px;">
+            به بخش مدیریت همکاران و ادمین‌های پروژه خوش آمدید! هم‌اکنون می‌توانید اپلیکیشن مدیریت تسک، تقویم شمسی، یادداشت‌های تیمی ابسیدین و چت لحظه‌ای اختصاصی را به صورت ۱۰۰٪ مجزا و تمام‌صفحه باز کنید.
+        </p>
+
+        <div style="margin-bottom: 40px;">
+            <a href="<?php echo esc_url(home_url('/doctor-khaste')); ?>" target="_blank" style="display: inline-block; padding: 14px 32px; background: #f59e0b; color: #111; text-decoration: none; border-radius: 10px; font-weight: bold; font-size: 16px; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3); transition: transform 0.2s;">
+                🚀 ورود به اپلیکیشن اختصاصی (تمام صفحه)
+            </a>
+        </div>
+
+        <div style="border-top: 1px solid #e2e8f0; padding-top: 30px; text-align: right;">
+            <h3 style="font-size: 16px; color: #0f172a; margin-bottom: 12px; font-weight: bold;">💡 راهنمای سریع اتصال ربات تلگرام:</h3>
+            <ul style="color: #475569; font-size: 14px; line-height: 2; list-style-type: decimal; padding-right: 20px;">
+                <li>ابتدا یک ربات تلگرام از طریق <a href="https://t.me/BotFather" target="_blank" style="color:#f59e0b; font-weight:bold;">BotFather@</a> ایجاد کنید.</li>
+                <li>وارد اپلیکیشن اختصاصی بالا شوید، به تب «تنظیمات» بروید و در بخش «تنظیمات پیشرفته»، توکن ربات و آیدی آن را ذخیره کنید.</li>
+                <li>برای متصل شدن، ربات را استارت کنید تا آیدی عددی شما را نمایش دهد؛ سپس آن را کپی کرده و در بخش «ادمین‌ها -> ویرایش» برای خود ذخیره کنید!</li>
+            </ul>
+        </div>
+    </div>
+    <?php
+}
+
 // --- Setup REST API Routes ---
 add_action('rest_api_init', 'doctor_khaste_register_routes');
 function doctor_khaste_register_routes() {
